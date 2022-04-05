@@ -12,16 +12,16 @@ uri = IracemaCharts
 
 # Input
 SOURCES += \
-        LineSeries/iracemalineseries.cpp \
+        iracemalineseries.cpp \
         iracemacharts_plugin.cpp \
         iracemacharts.cpp \
-        LineSeries/iracemalineseriesview.cpp
+        iracemalineseriesview.cpp
 
 HEADERS += \
-        LineSeries/iracemalineseries.h \
+        iracemalineseries.h \
         iracemacharts_plugin.h \
         iracemacharts.h \
-        LineSeries/iracemalineseriesview.h
+        iracemalineseriesview.h
 
 DISTFILES = qmldir
 
@@ -38,7 +38,9 @@ unix {
     installPath = $$[QT_INSTALL_QML]/$$replace(uri, \., /)
     qmldir.path = $$installPath
     target.path = $$installPath
-    INSTALLS += target qmldir
+    copy_qmltypes.path = $$installPath
+    copy_qmltypes.files = $$OUT_PWD/plugins.qmltypes
+    INSTALLS += target qmldir copy_qmltypes
 }
 
 windows {
