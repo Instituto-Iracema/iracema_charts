@@ -55,17 +55,30 @@ void IracemaLineSeriesView::setGridLineWidth(qreal newGridLineWidth)
     emit gridLineWidthChanged();
 }
 
-qreal IracemaLineSeriesView::xSize() const
+qreal IracemaLineSeriesView::xScaleBottom() const
 {
-    return _xSize;
+    return _xScaleBottom;
 }
 
-void IracemaLineSeriesView::setXSize(qreal newXSize)
+void IracemaLineSeriesView::setXScaleBottom(qreal newXScaleBottom)
 {
-    if (qFuzzyCompare(_xSize, newXSize))
+    if (qFuzzyCompare(_xScaleBottom, newXScaleBottom))
         return;
-    _xSize = newXSize;
-    emit xSizeChanged();
+    _xScaleBottom = newXScaleBottom;
+    emit xScaleBottomChanged();
+}
+
+qreal IracemaLineSeriesView::xScaleTop() const
+{
+    return _xScaleTop;
+}
+
+void IracemaLineSeriesView::setXScaleTop(qreal newXScaleTop)
+{
+    if (qFuzzyCompare(_xScaleTop, newXScaleTop))
+        return;
+    _xScaleTop = newXScaleTop;
+    emit xScaleTopChanged();
 }
 
 QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
@@ -112,7 +125,11 @@ void IracemaLineSeriesView::_drawLineSeries(QPainter *painter, IracemaLineSeries
 
     for (QLineF line : lineSeries->dataBuffer())
     {
-        line.setPoints(QPointF(line.p1().x(), _pixmap.height() - line.p1().y()), QPointF(line.p2().x(), _pixmap.height() - line.p2().y()));
+        qreal newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, painter->window().width());
+        qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, painter->window().width());
+        QPointF newP1(newX1, _pixmap.height() - line.p1().y());
+        QPointF newP2(newX2, _pixmap.height() - line.p2().y());
+        line.setPoints(newP1, newP2);
         painter->drawLine(line);
     }
 
@@ -125,6 +142,16 @@ void IracemaLineSeriesView::_drawLines()
     {
         _drawLineSeries(_pixmapPainter, lineSeries);
     }
+}
+
+qreal IracemaLineSeriesView::_convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop)
+{
+    qreal newValue = oldValue - oldScaleBottom;
+    newValue *= newScaleTop - newScaleBottom;
+    newValue /= oldScaleTop - oldScaleBottom;
+    newValue += newScaleBottom;
+
+    return newValue;
 }
 
 void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line)

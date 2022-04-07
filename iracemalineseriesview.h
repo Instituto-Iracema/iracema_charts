@@ -16,7 +16,8 @@ class IracemaLineSeriesView : public QQuickPaintedItem
     Q_PROPERTY(QSizeF gridOffset READ gridOffset WRITE setGridOffset NOTIFY gridOffsetChanged)
     Q_PROPERTY(unsigned int updateTime READ updateTime WRITE setUpdateTime NOTIFY updateTimeChanged)
     Q_PROPERTY(qreal gridLineWidth READ gridLineWidth WRITE setGridLineWidth NOTIFY gridLineWidthChanged)
-    Q_PROPERTY(qreal xSize READ xSize WRITE setXSize NOTIFY xSizeChanged)
+    Q_PROPERTY(qreal xScaleBottom READ xScaleBottom WRITE setXScaleBottom NOTIFY xScaleBottomChanged)
+    Q_PROPERTY(qreal xScaleTop READ xScaleTop WRITE setXScaleTop NOTIFY xScaleTopChanged)
     Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines)
     QML_NAMED_ELEMENT(IracemaLineSeriesView)
 
@@ -36,10 +37,9 @@ private:
      * @brief Width of the line of the grid
      */
     qreal _gridLineWidth = 1;
-    /**
-     * @brief The max value on the X axis of the chart
-     */
-    qreal _xSize = 10000;
+
+    qreal _xScaleBottom = 0;
+    qreal _xScaleTop = 10000;
 
     unsigned int _updateTime = 50;
 
@@ -54,6 +54,7 @@ private:
     void _drawGrid(QPainter *painter);
     void _drawLineSeries(QPainter *painter, IracemaLineSeries *line);
     void _drawLines();
+    qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
 
@@ -77,8 +78,11 @@ public:
     qreal gridLineWidth() const;
     void setGridLineWidth(qreal newGridLineWidth);
 
-    qreal xSize() const;
-    void setXSize(qreal newXSize);
+    qreal xScaleBottom() const;
+    void setXScaleBottom(qreal newXScaleBottom);
+
+    qreal xScaleTop() const;
+    void setXScaleTop(qreal newXScaleTop);
 
 signals:
     void gridColorChanged();
@@ -87,6 +91,8 @@ signals:
     void updateTimeChanged();
     void gridLineWidthChanged();
     void xSizeChanged();
+    void xScaleBottomChanged();
+    void xScaleTopChanged();
 
 protected:
     // QQuickItem interface
