@@ -1,39 +1,139 @@
 #include "iracemalineseriesview.h"
 
-/**
- * @brief Lines getter
- * @return The list of lineseries of the view
- */
-const QList<IracemaLineSeries *> &IracemaLineSeriesView::lines() const
+#include <QBrush>
+
+const QSizeF &IracemaLineSeriesView::gridSize() const
 {
-    return _lines;
+    return _gridSize;
 }
 
-/**
- * @brief Lines Setter
- * @param newLines - The new list of line series to be setted
- */
-void IracemaLineSeriesView::setLines(const QList<IracemaLineSeries *> &newLines)
+void IracemaLineSeriesView::setGridSize(const QSizeF &newGridSize)
 {
-    if (_lines == newLines)
+    qDebug() << "setgridsize";
+    if (_gridSize == newGridSize)
         return;
-    _lines = newLines;
-    emit linesChanged();
+    _gridSize = newGridSize;
+    emit gridSizeChanged();
 }
 
-/**
- * @brief GridColor Getter
- * @return The Grid Color
- */
+const QSizeF &IracemaLineSeriesView::gridOffset() const
+{
+    return _gridOffset;
+}
+
+void IracemaLineSeriesView::setGridOffset(const QSizeF &newGridOffset)
+{
+    if (_gridOffset == newGridOffset)
+        return;
+    _gridOffset = newGridOffset;
+    emit gridOffsetChanged();
+}
+
+unsigned int IracemaLineSeriesView::updateTime() const
+{
+    return _updateTime;
+}
+
+void IracemaLineSeriesView::setUpdateTime(unsigned int newUpdateTime)
+{
+    if (_updateTime == newUpdateTime)
+        return;
+    _updateTime = newUpdateTime;
+    emit updateTimeChanged();
+}
+
+qreal IracemaLineSeriesView::gridLineWidth() const
+{
+    return _gridLineWidth;
+}
+
+void IracemaLineSeriesView::setGridLineWidth(qreal newGridLineWidth)
+{
+    if (qFuzzyCompare(_gridLineWidth, newGridLineWidth))
+        return;
+    _gridLineWidth = newGridLineWidth;
+    emit gridLineWidthChanged();
+}
+
+qreal IracemaLineSeriesView::xSize() const
+{
+    return _xSize;
+}
+
+void IracemaLineSeriesView::setXSize(qreal newXSize)
+{
+    if (qFuzzyCompare(_xSize, newXSize))
+        return;
+    _xSize = newXSize;
+    emit xSizeChanged();
+}
+
+QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
+{
+    return QQmlListProperty<IracemaLineSeries>(this, nullptr, &IracemaLineSeriesView::appendLine,
+                                               nullptr, nullptr, nullptr);
+}
+
+void IracemaLineSeriesView::_drawGridHorizontal(QPainter *painter)
+{
+    qreal currentPosition = _gridOffset.height();
+    while(currentPosition <= height())
+    {
+        painter->drawLine(0, currentPosition, width(), currentPosition);
+        currentPosition += _gridSize.height();
+    }
+}
+
+void IracemaLineSeriesView::_drawGridVertical(QPainter *painter)
+{
+    qreal currentPosition = _gridOffset.width();
+    while(currentPosition <= width())
+    {
+        painter->drawLine(currentPosition, 0, currentPosition, height());
+        currentPosition += _gridSize.width();
+    }
+}
+
+void IracemaLineSeriesView::_drawGrid(QPainter *painter)
+{
+    qDebug() << _gridSize;
+
+    if (_gridSize == QSizeF(0, 0)) return;
+
+    painter->setPen(QPen(QBrush(_gridColor, Qt::SolidPattern), _gridLineWidth, Qt::SolidLine, Qt::RoundCap));
+
+    _drawGridHorizontal(painter);
+    _drawGridVertical(painter);
+}
+
+void IracemaLineSeriesView::_drawLine(QPainter *painter, IracemaLineSeries *line)
+{
+    painter->setPen(QPen(QBrush(line->lineColor(), Qt::SolidPattern), line->lineWidth(), Qt::SolidLine, Qt::RoundCap));
+
+
+}
+
+void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line)
+{
+    IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
+    if (view) {
+        line->setParentItem(view);
+        view->_lines.append(line);
+    }
+}
+
+IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent)
+    : QQuickPaintedItem(parent)
+{
+    qDebug() << "init";
+    qDebug() << width();
+}
+
 const QColor &IracemaLineSeriesView::gridColor() const
 {
     return _gridColor;
 }
 
-/**
- * @brief GridColor Setter
- * @param newGridColor - The new GridColor to be set
- */
 void IracemaLineSeriesView::setGridColor(const QColor &newGridColor)
 {
     if (_gridColor == newGridColor)
@@ -42,115 +142,30 @@ void IracemaLineSeriesView::setGridColor(const QColor &newGridColor)
     emit gridColorChanged();
 }
 
-/**
- * @brief GridSize Getter
- * @return The Grid Size as a QSize
- */
-const QSizeF &IracemaLineSeriesView::gridSize() const
+void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    return _gridSize;
+    qDebug() << "geometry changed";
+    qDebug() << newGeometry.width();
+
+    std::ignore = oldGeometry;
+
+    _pixmap = QPixmap(newGeometry.width(), newGeometry.height());
+
+    if (_pixmapPainter->isActive()) _pixmapPainter->end();
+    _pixmapPainter->begin(&_pixmap);
+
+    _drawGrid(_pixmapPainter);
 }
 
-/**
- * @brief GridSize Setter
- * @param newGridSize - The new GridSize to be set
- */
-void IracemaLineSeriesView::setGridSize(const QSizeF &newGridSize)
+void IracemaLineSeriesView::timerEvent(QTimerEvent *event)
 {
-    if (_gridSize == newGridSize)
-        return;
-    _gridSize = newGridSize;
-    emit gridSizeChanged();
+    std::ignore = event;
 }
 
-void IracemaLineSeriesView::componentComplete()
-{
-
-}
-
-/**
- * @brief Draws a LineSeries on the view
- * @param painter - Reference to the painter
- * @param line - The line to be drawn
- */
-void IracemaLineSeriesView::_drawLine(QPainter *painter, IracemaLineSeries *line)
-{
-
-}
-
-/**
- * @brief Draws the horizontal grid lines on the view
- * @param painter - Reference to the painter
- */
-void IracemaLineSeriesView::_drawHorizontalGrid(QPainter *painter)
-{
-    painter->setPen(QPen(_gridColor));
-    for (float currentPosition = 0; currentPosition < height(); currentPosition += _gridSize.height())
-    {
-        painter->drawLine(QPointF(0, currentPosition), QPointF(width(), currentPosition));
-    }
-}
-
-/**
- * @brief Draws the vertical grid lines on the view
- * @param painter - Reference to the painter
- */
-void IracemaLineSeriesView::_drawVerticalGrid(QPainter *painter)
-{
-
-}
-
-/**
- * @brief Draws the grid on the view
- * @param painter - Reference to the painter
- */
-void IracemaLineSeriesView::_drawGrid(QPainter *painter)
-{
-
-}
-
-/**
- * @brief Constructs a new LineSeriesView
- * @param parent - The parent QObject
- */
-IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent) : QQuickPaintedItem(parent)
-{
-    setFlag(QQuickItem::ItemHasContents, true);
-//    _pixmap = QPixmap(boundingRect().width(), boundingRect().height());
-//    _pixmapPainter = new QPainter();
-//    _pixmapPainter->begin(&_pixmap);
-}
-
-
-IracemaLineSeriesView::~IracemaLineSeriesView()
-{
-
-}
-
-/**
- * @brief Called the the system needs to redraw the item
- * @param painter - Reference to the painter
- */
 void IracemaLineSeriesView::paint(QPainter *painter)
 {
-//    updateChart();
-//    painter->drawPixmap(QPointF(), _pixmap);
-    painter->setPen(QPen(Qt::red));
-    painter->drawRect(boundingRect());
-}
+    qDebug() << "paint!";
+    qDebug() << width();
 
-/**
- * @brief Updates the view with new data
- */
-void IracemaLineSeriesView::updateChart()
-{
-    _drawHorizontalGrid(_pixmapPainter);
-}
-
-/**
- * @brief Redraws the view to fit new size
- */
-void IracemaLineSeriesView::updateChartSize()
-{
-
+    painter->drawPixmap(0,0, _pixmap);
 }

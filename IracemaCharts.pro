@@ -34,6 +34,7 @@ DISTFILES = qmldir
 }
 
 qmldir.files = qmldir
+qmldir.files += plugins.qmltypes
 unix {
     installPath = $$[QT_INSTALL_QML]/$$replace(uri, \., /)
     qmldir.path = $$installPath
@@ -44,8 +45,11 @@ unix {
 }
 
 windows {
-    installPath = $$[QT_INSTALL_QML]\$$replace(uri, \., \)
+    installPath = $$[QT_INSTALL_QML]/$$replace(uri, \., /)
+    installPath = $$replace(installPath, /, \\)
     qmldir.path = $$installPath
     target.path = $$installPath
-    INSTALLS += target qmldir
+    copy_qmltypes.path = $$installPath
+    copy_qmltypes.files = $$OUT_PWD/plugins.qmltypes
+    INSTALLS += target qmldir copy_qmltypes
 }
