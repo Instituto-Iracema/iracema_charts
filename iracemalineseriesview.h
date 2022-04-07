@@ -15,6 +15,9 @@ class IracemaLineSeriesView : public QQuickPaintedItem
     Q_PROPERTY(QSizeF gridSize READ gridSize WRITE setGridSize NOTIFY gridSizeChanged)
     Q_PROPERTY(QSizeF gridOffset READ gridOffset WRITE setGridOffset NOTIFY gridOffsetChanged)
     Q_PROPERTY(unsigned int updateTime READ updateTime WRITE setUpdateTime NOTIFY updateTimeChanged)
+    Q_PROPERTY(qreal gridLineWidth READ gridLineWidth WRITE setGridLineWidth NOTIFY gridLineWidthChanged)
+    Q_PROPERTY(qreal xSize READ xSize WRITE setXSize NOTIFY xSizeChanged)
+    Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines)
     QML_NAMED_ELEMENT(IracemaLineSeriesView)
 
 private:
@@ -49,13 +52,10 @@ private:
     void _drawGridHorizontal(QPainter *painter);
     void _drawGridVertical(QPainter *painter);
     void _drawGrid(QPainter *painter);
-    void _drawLine(QPainter *painter, IracemaLineSeries *line);
+    void _drawLineSeries(QPainter *painter, IracemaLineSeries *line);
+    void _drawLines();
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
-
-    Q_PROPERTY(qreal gridLineWidth READ gridLineWidth WRITE setGridLineWidth NOTIFY gridLineWidthChanged)
-
-    Q_PROPERTY(qreal xSize READ xSize WRITE setXSize NOTIFY xSizeChanged)
 
 public:
     explicit IracemaLineSeriesView(QQuickItem *parent = nullptr);
@@ -84,11 +84,8 @@ signals:
     void gridColorChanged();
     void gridSizeChanged();
     void gridOffsetChanged();
-
     void updateTimeChanged();
-
     void gridLineWidthChanged();
-
     void xSizeChanged();
 
 protected:
