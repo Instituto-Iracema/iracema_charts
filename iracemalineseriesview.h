@@ -49,6 +49,8 @@ private:
     QPixmap _pixmap;
     QPainter *_pixmapPainter = new QPainter();
 
+    int _updateTimerId = -1;
+
     void _drawGridHorizontal(QPainter *painter);
     void _drawGridVertical(QPainter *painter);
     void _drawGrid(QPainter *painter);

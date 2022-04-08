@@ -166,7 +166,7 @@ void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list
 IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent)
     : QQuickPaintedItem(parent)
 {
-    startTimer(_updateTime, Qt::PreciseTimer);
+
 }
 
 const QColor &IracemaLineSeriesView::gridColor() const
@@ -186,6 +186,11 @@ void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRe
 {
     qDebug() << "geometry changed";
     qDebug() << newGeometry.width();
+
+    if (_updateTimerId == -1)
+    {
+        _updateTimerId = startTimer(_updateTime, Qt::PreciseTimer);
+    }
 
     std::ignore = oldGeometry;
 
