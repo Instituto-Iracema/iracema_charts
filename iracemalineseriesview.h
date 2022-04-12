@@ -18,12 +18,14 @@ class IracemaLineSeriesView : public QQuickPaintedItem
     Q_PROPERTY(qreal gridLineWidth READ gridLineWidth WRITE setGridLineWidth NOTIFY gridLineWidthChanged)
     Q_PROPERTY(qreal xScaleBottom READ xScaleBottom WRITE setXScaleBottom NOTIFY xScaleBottomChanged)
     Q_PROPERTY(qreal xScaleTop READ xScaleTop WRITE setXScaleTop NOTIFY xScaleTopChanged)
+    Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines NOTIFY linesChanged)
     QML_NAMED_ELEMENT(IracemaLineSeriesView)
 
 private:
     // QProperties
 
+    QColor _backgroundColor = Qt::white;
     QColor _gridColor = Qt::gray;
     /**
      * @brief Size of the grid on X and Y axis in pixels
@@ -40,8 +42,10 @@ private:
 
     qreal _xScaleBottom = 0;
     qreal _xScaleTop = 10000;
+    qreal _maxPixmapSize = 1000;
 
     unsigned int _updateTime = 50;
+    unsigned int _resizeTime = 500;
 
     QList<IracemaLineSeries *> _lines;
     QQmlListProperty<IracemaLineSeries> lines();
@@ -49,24 +53,31 @@ private:
     QPixmap _pixmap;
     QPainter *_pixmapPainter = new QPainter();
 
-    bool _firstInitialization = true;
-    bool _isResizing = false;
-
     int _updateTimerId = -1;
     int _resizeTimerId = -1;
 
+    bool _isResizing = false;
+
     void _drawGridHorizontal(QPainter *painter);
     void _drawGridVertical(QPainter *painter);
-    void _drawGrid(QPainter *painter);
+    void _drawGrid();
     void _drawLineSeries(QPainter *painter, IracemaLineSeries *line);
     void _drawLines();
-    void _clearData();
+    void _recreatePixmap(qreal width, qreal height);
+    void _startPainter();
+    void _endPainter();
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
 
 public:
     explicit IracemaLineSeriesView(QQuickItem *parent = nullptr);
+
+    Q_INVOKABLE void addPoint(quint32 lineIndex, QPointF point);
+    Q_INVOKABLE void addPoint(quint32 lineIndex, qreal x, qreal y);
+    Q_INVOKABLE void addPoints(quint32 lineIndex, QList<QPointF> points);
+    Q_INVOKABLE void clearData();
+    Q_INVOKABLE void clearLine(quint32 lineIndex);
 
     void paint(QPainter *painter);
 
@@ -91,6 +102,9 @@ public:
     qreal xScaleTop() const;
     void setXScaleTop(qreal newXScaleTop);
 
+    const QColor &backgroundColor() const;
+    void setBackgroundColor(const QColor &newBackgroundColor);
+
 signals:
     void gridColorChanged();
     void gridSizeChanged();
@@ -100,6 +114,7 @@ signals:
     void xSizeChanged();
     void xScaleBottomChanged();
     void xScaleTopChanged();
+    void backgroundColorChanged();
     void linesChanged();
 
 protected:

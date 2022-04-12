@@ -1,6 +1,7 @@
 #include "iracemalineseriesview.h"
 
 #include <QBrush>
+#include <math.h>
 #include <QRandomGenerator>
 
 const QSizeF &IracemaLineSeriesView::gridSize() const
@@ -82,6 +83,19 @@ void IracemaLineSeriesView::setXScaleTop(qreal newXScaleTop)
     emit xScaleTopChanged();
 }
 
+const QColor &IracemaLineSeriesView::backgroundColor() const
+{
+    return _backgroundColor;
+}
+
+void IracemaLineSeriesView::setBackgroundColor(const QColor &newBackgroundColor)
+{
+    if (_backgroundColor == newBackgroundColor)
+        return;
+    _backgroundColor = newBackgroundColor;
+    emit backgroundColorChanged();
+}
+
 QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
 {
     return QQmlListProperty<IracemaLineSeries>(this, nullptr, &IracemaLineSeriesView::appendLine,
@@ -108,16 +122,18 @@ void IracemaLineSeriesView::_drawGridVertical(QPainter *painter)
     }
 }
 
-void IracemaLineSeriesView::_drawGrid(QPainter *painter)
+void IracemaLineSeriesView::_drawGrid()
 {
-    qDebug() << _gridSize;
+    _startPainter();
 
     if (_gridSize == QSizeF(0, 0)) return;
 
-    painter->setPen(QPen(QBrush(_gridColor, Qt::SolidPattern), _gridLineWidth, Qt::SolidLine, Qt::RoundCap));
+    _pixmapPainter->setPen(QPen(QBrush(_gridColor, Qt::SolidPattern), _gridLineWidth, Qt::SolidLine, Qt::RoundCap));
 
-    _drawGridHorizontal(painter);
-    _drawGridVertical(painter);
+    _drawGridHorizontal(_pixmapPainter);
+    _drawGridVertical(_pixmapPainter);
+
+    _endPainter();
 }
 
 void IracemaLineSeriesView::_drawLineSeries(QPainter *painter, IracemaLineSeries *lineSeries)
@@ -139,18 +155,29 @@ void IracemaLineSeriesView::_drawLineSeries(QPainter *painter, IracemaLineSeries
 
 void IracemaLineSeriesView::_drawLines()
 {
+    _startPainter();
+
     for (auto lineSeries : qAsConst(_lines))
     {
         _drawLineSeries(_pixmapPainter, lineSeries);
     }
+
+    _endPainter();
 }
 
-void IracemaLineSeriesView::_clearData()
+void IracemaLineSeriesView::_recreatePixmap(qreal width, qreal height)
 {
-    for (IracemaLineSeries *line : qAsConst(_lines))
-    {
-        line->clearData();
-    }
+    _pixmap = QPixmap(width, height);
+}
+
+void IracemaLineSeriesView::_startPainter()
+{
+    _pixmapPainter->begin(&_pixmap);
+}
+
+void IracemaLineSeriesView::_endPainter()
+{
+    _pixmapPainter->end();
 }
 
 qreal IracemaLineSeriesView::_convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop)
@@ -175,9 +202,38 @@ void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list
 IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent)
     : QQuickPaintedItem(parent)
 {
-    setRenderTarget(FramebufferObject);
-    setMipmap(true);
-    setOpaquePainting(true);
+
+}
+
+void IracemaLineSeriesView::addPoint(quint32 lineIndex, QPointF point)
+{
+    _lines[lineIndex]->addPoint(point);
+}
+
+void IracemaLineSeriesView::addPoint(quint32 lineIndex, qreal x, qreal y)
+{
+    _lines[lineIndex]->addPoint(QPointF(x, y));
+}
+
+void IracemaLineSeriesView::addPoints(quint32 lineIndex, QList<QPointF> points)
+{
+    for (QPointF point: points)
+    {
+        _lines[lineIndex]->addPoint(point);
+    }
+}
+
+void IracemaLineSeriesView::clearData()
+{
+    for (IracemaLineSeries *line : _lines)
+    {
+        line->clearData();
+    }
+}
+
+void IracemaLineSeriesView::clearLine(quint32 lineIndex)
+{
+    _lines[lineIndex]->clearData();
 }
 
 const QColor &IracemaLineSeriesView::gridColor() const
@@ -195,38 +251,30 @@ void IracemaLineSeriesView::setGridColor(const QColor &newGridColor)
 
 void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    std::ignore = oldGeometry;
-
-
-    if (_isResizing)
+    if (_updateTimerId == -1)
     {
-        return;
-    }
-
-    _clearData();
-
-    if (_firstInitialization)
-    {
-        _firstInitialization = false;
         _updateTimerId = startTimer(_updateTime, Qt::PreciseTimer);
     }
 
-    if (_pixmapPainter->isActive()) _pixmapPainter->end();
-    _pixmap = QPixmap(newGeometry.width(), newGeometry.height());
-    _pixmapPainter->begin(&_pixmap);
+    std::ignore = oldGeometry;
 
-    _drawGrid(_pixmapPainter);
+    _recreatePixmap(newGeometry.width(), newGeometry.height());
+
+    if (_pixmapPainter->isActive()) _pixmapPainter->end();
+
+    _drawGrid();
 }
 
 void IracemaLineSeriesView::timerEvent(QTimerEvent *event)
 {
-    std::ignore = event;
-
-    _drawLines();
-    update();
+    if (event->timerId() == _updateTimerId)
+    {
+        _drawLines();
+        update();
+    }
 }
 
 void IracemaLineSeriesView::paint(QPainter *painter)
 {
-    painter->drawPixmap(0,0, _pixmap);
+    painter->drawPixmap(0, 0, _pixmap);
 }
