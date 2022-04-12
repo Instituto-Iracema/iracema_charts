@@ -18,7 +18,7 @@ class IracemaLineSeriesView : public QQuickPaintedItem
     Q_PROPERTY(qreal gridLineWidth READ gridLineWidth WRITE setGridLineWidth NOTIFY gridLineWidthChanged)
     Q_PROPERTY(qreal xScaleBottom READ xScaleBottom WRITE setXScaleBottom NOTIFY xScaleBottomChanged)
     Q_PROPERTY(qreal xScaleTop READ xScaleTop WRITE setXScaleTop NOTIFY xScaleTopChanged)
-    Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines)
+    Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines NOTIFY linesChanged)
     QML_NAMED_ELEMENT(IracemaLineSeriesView)
 
 private:
@@ -49,13 +49,18 @@ private:
     QPixmap _pixmap;
     QPainter *_pixmapPainter = new QPainter();
 
+    bool _firstInitialization = true;
+    bool _isResizing = false;
+
     int _updateTimerId = -1;
+    int _resizeTimerId = -1;
 
     void _drawGridHorizontal(QPainter *painter);
     void _drawGridVertical(QPainter *painter);
     void _drawGrid(QPainter *painter);
     void _drawLineSeries(QPainter *painter, IracemaLineSeries *line);
     void _drawLines();
+    void _clearData();
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
@@ -95,6 +100,7 @@ signals:
     void xSizeChanged();
     void xScaleBottomChanged();
     void xScaleTopChanged();
+    void linesChanged();
 
 protected:
     // QQuickItem interface

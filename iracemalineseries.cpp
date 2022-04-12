@@ -89,5 +89,6 @@ void IracemaLineSeries::applyBuffer()
 
 void IracemaLineSeries::clearData()
 {
-
+    _data.clear();
+    _dataBuffer.clear();
 }
