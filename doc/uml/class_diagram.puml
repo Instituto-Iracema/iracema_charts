@@ -1,10 +1,21 @@
 @startuml IracemaCharts Class Diagram
 
     class IracemaLineSeriesView extends QQuickPaintedItem {
+        - //QPainter *// _pixmapPainter
+        - //QPixmap// _pixmap
+        - //Q_PROPERTY QColor// _gridColor;
+        - //Q_PROPERTY QColor// _gridSizer;
         - //Q_PROPERTY QList<IracemaLineSeries *>// _lines
+        - //void// _draw_Line(QPainter *painter, IracemaLineSeries line)
+        - //void// _drawHorizontalGrid(QPainter *painter)
+        - //void// _drawVerticalGrid(QPainter *painter)
+        - //void// _drawGrid(QPainter *painter)
         + //void// paint(QPainter *painter)
-        + //Q_INVOKABLE// update()
-        + //void// updateChartSize()
+        + //Q_INVOKABLE void// update()
+        + //Q_INVOKABLE void// updateChartSize()
+        + //SIGNAL void// linesChanged()
+        + //SIGNAL void// gridColorChanged()
+        + //SIGNAL void// gridSizeChanged
     }
 
     class IracemaLineSeries extends QQuickItem {
@@ -13,7 +24,6 @@
         + //Q_INVOKABLE void// addData(QVector<QPointF> data)
         + //Q_INVOKABLE void// addPoint(QPointF point)
         + //Q_INVOKABLE void// addPoint(float x, float y)
-        + //Q_INVOKABLE void// applyBuffer()
     }
 
 @enduml
