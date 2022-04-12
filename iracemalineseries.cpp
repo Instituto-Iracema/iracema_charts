@@ -36,6 +36,32 @@ const QVector<QLineF> &IracemaLineSeries::dataBuffer() const
     return _dataBuffer;
 }
 
+qreal IracemaLineSeries::yScaleTop() const
+{
+    return _yScaleTop;
+}
+
+void IracemaLineSeries::setYScaleTop(qreal newYScaleTop)
+{
+    if (qFuzzyCompare(_yScaleTop, newYScaleTop))
+        return;
+    _yScaleTop = newYScaleTop;
+    emit yScaleTopChanged();
+}
+
+qreal IracemaLineSeries::yScaleBottom() const
+{
+    return _yScaleBottom;
+}
+
+void IracemaLineSeries::setYScaleBottom(qreal newYScaleBottom)
+{
+    if (qFuzzyCompare(_yScaleBottom, newYScaleBottom))
+        return;
+    _yScaleBottom = newYScaleBottom;
+    emit yScaleBottomChanged();
+}
+
 void IracemaLineSeries::_addPointToBuffer(QPointF point)
 {
     QLineF line;

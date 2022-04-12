@@ -26,6 +26,9 @@ private:
     // QProperties
 
     QColor _backgroundColor = Qt::white;
+    /**
+     * @brief Color of the grid lines
+     */
     QColor _gridColor = Qt::gray;
     /**
      * @brief Size of the grid on X and Y axis in pixels

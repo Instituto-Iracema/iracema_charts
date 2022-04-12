@@ -126,6 +126,8 @@ void IracemaLineSeriesView::_drawGrid()
 {
     _startPainter();
 
+    _pixmapPainter->fillRect(boundingRect(), QBrush(_backgroundColor));
+
     if (_gridSize == QSizeF(0, 0)) return;
 
     _pixmapPainter->setPen(QPen(QBrush(_gridColor, Qt::SolidPattern), _gridLineWidth, Qt::SolidLine, Qt::RoundCap));
@@ -142,10 +144,12 @@ void IracemaLineSeriesView::_drawLineSeries(QPainter *painter, IracemaLineSeries
 
     for (QLineF line : lineSeries->dataBuffer())
     {
-        qreal newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, painter->window().width());
-        qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, painter->window().width());
-        QPointF newP1(newX1, _pixmap.height() - line.p1().y());
-        QPointF newP2(newX2, _pixmap.height() - line.p2().y());
+        qreal newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, width());
+        qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width());
+        qreal newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height());
+        qreal newY2 = _convertValueToNewScale(line.p2().y(),lineSeries->yScaleBottom(), lineSeries->yScaleTop(),  0, height());
+        QPointF newP1(newX1, newY1);
+        QPointF newP2(newX2, newY2);
         line.setPoints(newP1, newP2);
         painter->drawLine(line);
     }
@@ -202,7 +206,9 @@ void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list
 IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent)
     : QQuickPaintedItem(parent)
 {
-
+    setMipmap(true);
+    setRenderTarget(InvertedYFramebufferObject);
+    setOpaquePainting(true);
 }
 
 void IracemaLineSeriesView::addPoint(quint32 lineIndex, QPointF point)

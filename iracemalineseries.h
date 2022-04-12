@@ -11,20 +11,23 @@ class IracemaLineSeries : public QQuickItem
     Q_OBJECT
     Q_PROPERTY(QColor lineColor READ lineColor WRITE setLineColor NOTIFY lineColorChanged)
     Q_PROPERTY(qreal lineWidth READ lineWidth WRITE setLineWidth NOTIFY lineWidthChanged)
-    //TODO review if these properties are necessary
-    Q_PROPERTY(QVector<QLineF> data READ data NOTIFY dataChanged)
-    Q_PROPERTY(QVector<QLineF> dataBuffer READ dataBuffer NOTIFY dataBufferChanged)
     QML_NAMED_ELEMENT(IracemaLineSeries)
 
 private:
     QColor _lineColor = Qt::black;
     qreal _lineWidth = 1;
+    qreal _yScaleTop = 100;
+    qreal _yScaleBottom = 0;
 
     QVector<QLineF> _data;
     QVector<QLineF> _dataBuffer;
 
     void _addPointToBuffer(QPointF point);
 
+
+    Q_PROPERTY(qreal yScaleTop READ yScaleTop WRITE setYScaleTop NOTIFY yScaleTopChanged)
+
+    Q_PROPERTY(qreal yScaleBottom READ yScaleBottom WRITE setYScaleBottom NOTIFY yScaleBottomChanged)
 
 public:
     explicit IracemaLineSeries(QQuickItem *parent = nullptr);
@@ -45,12 +48,20 @@ public:
 
     const QVector<QLineF> &dataBuffer() const;
 
+    qreal yScaleTop() const;
+    void setYScaleTop(qreal newYScaleTop);
+
+    qreal yScaleBottom() const;
+    void setYScaleBottom(qreal newYScaleBottom);
+
 signals:
 
     void lineColorChanged();
     void lineWidthChanged();
     void dataChanged();
     void dataBufferChanged();
+    void yScaleTopChanged();
+    void yScaleBottomChanged();
 };
 
 #endif // IRACEMALINESERIES_H
