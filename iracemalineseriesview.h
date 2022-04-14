@@ -120,6 +120,9 @@ signals:
     void backgroundColorChanged();
     void linesChanged();
 
+private slots:
+    void onGridSizeChanged();
+
 protected:
     // QQuickItem interface
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
