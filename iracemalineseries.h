@@ -4,6 +4,7 @@
 #include <QLineF>
 #include <QPointF>
 #include <QQuickItem>
+#include <QSGFlatColorMaterial>
 #include <QVector>
 
 class IracemaLineSeries : public QQuickItem
@@ -15,6 +16,7 @@ class IracemaLineSeries : public QQuickItem
 
 private:
     QColor _lineColor = Qt::black;
+    QSGFlatColorMaterial *_lineMaterial;
     qreal _lineWidth = 1;
     qreal _yScaleTop = 100;
     qreal _yScaleBottom = 0;
@@ -53,6 +55,8 @@ public:
 
     qreal yScaleBottom() const;
     void setYScaleBottom(qreal newYScaleBottom);
+
+    QSGFlatColorMaterial *lineMaterial() const;
 
 signals:
 
