@@ -10,6 +10,7 @@ void IracemaLineSeries::setLineColor(const QColor &newLineColor)
     if (_lineColor == newLineColor)
         return;
     _lineColor = newLineColor;
+    _lineMaterial->setColor(_lineColor);
     emit lineColorChanged();
 }
 
@@ -62,6 +63,11 @@ void IracemaLineSeries::setYScaleBottom(qreal newYScaleBottom)
     emit yScaleBottomChanged();
 }
 
+QSGFlatColorMaterial *IracemaLineSeries::lineMaterial() const
+{
+    return _lineMaterial;
+}
+
 void IracemaLineSeries::_addPointToBuffer(QPointF point)
 {
     QLineF line;
@@ -83,7 +89,8 @@ void IracemaLineSeries::_addPointToBuffer(QPointF point)
 
 IracemaLineSeries::IracemaLineSeries(QQuickItem *parent) : QQuickItem(parent)
 {
-
+    _lineMaterial = new QSGFlatColorMaterial();
+    _lineMaterial->setColor(_lineColor);
 }
 
 void IracemaLineSeries::addData(QVector<QPointF> data)

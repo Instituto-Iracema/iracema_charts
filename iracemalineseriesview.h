@@ -4,10 +4,11 @@
 #include "iracemalineseries.h"
 
 #include <QPainter>
-#include <QQuickPaintedItem>
+#include <QQuickItem>
+#include <QSGFlatColorMaterial>
 #include <QSizeF>
 
-class IracemaLineSeriesView : public QQuickPaintedItem
+class IracemaLineSeriesView : public QQuickItem
 {
     Q_OBJECT
     Q_DISABLE_COPY(IracemaLineSeriesView)
@@ -53,22 +54,20 @@ private:
     QList<IracemaLineSeries *> _lines;
     QQmlListProperty<IracemaLineSeries> lines();
 
-    QPixmap _pixmap;
-    QPainter *_pixmapPainter = new QPainter();
+    QSGFlatColorMaterial *_gridMaterial;
+    bool _reDrawGrid = true;
 
     int _updateTimerId = -1;
     int _resizeTimerId = -1;
 
     bool _isResizing = false;
 
-    void _drawGridHorizontal(QPainter *painter);
-    void _drawGridVertical(QPainter *painter);
-    void _drawGrid();
-    void _drawLineSeries(QPainter *painter, IracemaLineSeries *line);
-    void _drawLines();
-    void _recreatePixmap(qreal width, qreal height);
-    void _startPainter();
-    void _endPainter();
+    void _drawGridHorizontal(QSGNode *mainNode);
+    void _drawGridVertical(QSGNode *mainNode);
+    void _drawGrid(QSGNode *mainNode);
+    void _drawOneLine(QSGNode *mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial *lineMaterial);
+    void _drawLineSeries(QSGNode *mainNode, IracemaLineSeries *line, bool invertY = true);
+    void _drawLines(QSGNode *mainNode);
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
@@ -129,6 +128,8 @@ protected:
 
     // QObject interface
     void timerEvent(QTimerEvent *event);
+
+    QSGNode *updatePaintNode(QSGNode * oldNode, UpdatePaintNodeData *);
 };
 
 #endif // IRACEMALINESERIESVIEW_H

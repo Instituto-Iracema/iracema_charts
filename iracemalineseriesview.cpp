@@ -3,6 +3,18 @@
 #include <QBrush>
 #include <math.h>
 #include <QRandomGenerator>
+#include <QSGGeometryNode>
+#include <QSGFlatColorMaterial>
+
+IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent) : QQuickItem(parent)
+{
+    setFlag(ItemHasContents, true);
+
+    _gridMaterial = new QSGFlatColorMaterial();
+    _gridMaterial->setColor(_gridColor);
+
+    connect(this, &IracemaLineSeriesView::gridSizeChanged, &IracemaLineSeriesView::onGridSizeChanged);
+}
 
 const QSizeF &IracemaLineSeriesView::gridSize() const
 {
@@ -97,7 +109,7 @@ void IracemaLineSeriesView::setBackgroundColor(const QColor &newBackgroundColor)
 
 void IracemaLineSeriesView::onGridSizeChanged()
 {
-    _recreatePixmap(width(), height());
+    _reDrawGrid = true;
 }
 
 QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
@@ -106,39 +118,38 @@ QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
                                                nullptr, nullptr, nullptr);
 }
 
-void IracemaLineSeriesView::_drawGridHorizontal(QPainter *painter)
+void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
 {
     qreal currentPosition = _gridOffset.height();
     while(currentPosition <= height())
     {
-        painter->drawLine(0, currentPosition, width(), currentPosition);
+        QLineF line(0, currentPosition, width(), currentPosition);
+        _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
         currentPosition += _gridSize.height();
     }
 }
 
-void IracemaLineSeriesView::_drawGridVertical(QPainter *painter)
+void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
 {
     qreal currentPosition = _gridOffset.width();
     while(currentPosition <= width())
     {
-        painter->drawLine(currentPosition, 0, currentPosition, height());
+        QLineF line(currentPosition, 0, currentPosition, height());
+        _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
         currentPosition += _gridSize.width();
     }
 }
 
-void IracemaLineSeriesView::_drawGrid()
+void IracemaLineSeriesView::_drawGrid(QSGNode *mainNode)
 {
     if (_gridSize.width() <= 0 || _gridSize.height() <= 0) return;
 
-    _pixmapPainter->setPen(QPen(QBrush(_gridColor, Qt::SolidPattern), _gridLineWidth, Qt::SolidLine, Qt::RoundCap));
-
-    _drawGridHorizontal(_pixmapPainter);
-    _drawGridVertical(_pixmapPainter);
+    _drawGridHorizontal(mainNode);
+    _drawGridVertical(mainNode);
 }
 
-void IracemaLineSeriesView::_drawLineSeries(QPainter *painter, IracemaLineSeries *lineSeries)
+void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries *lineSeries, bool invertY)
 {
-    painter->setPen(QPen(QBrush(lineSeries->lineColor(), Qt::SolidPattern), lineSeries->lineWidth(), Qt::SolidLine, Qt::RoundCap));
 
     for (QLineF line : lineSeries->dataBuffer())
     {
@@ -146,50 +157,30 @@ void IracemaLineSeriesView::_drawLineSeries(QPainter *painter, IracemaLineSeries
         qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width());
         qreal newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height());
         qreal newY2 = _convertValueToNewScale(line.p2().y(),lineSeries->yScaleBottom(), lineSeries->yScaleTop(),  0, height());
+        if (invertY) {
+            newY1 = height() - newY1;
+            newY2 = height() - newY2;
+        }
         QPointF newP1(newX1, newY1);
         QPointF newP2(newX2, newY2);
-        line.setPoints(newP1, newP2);
-        painter->drawLine(line);
+        QLineF newLine(newP1, newP2);
+        _drawOneLine(mainNode, newLine, lineSeries->lineWidth(), lineSeries->lineMaterial());
     }
 
     lineSeries->applyBuffer();
 }
 
-void IracemaLineSeriesView::_drawLines()
+void IracemaLineSeriesView::_drawLines(QSGNode *mainNode)
 {
-    _startPainter();
-
     for (auto lineSeries : qAsConst(_lines))
     {
-        _drawLineSeries(_pixmapPainter, lineSeries);
+        QSGNode *lineSeriesNode = new QSGNode();
+        lineSeriesNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
+        _drawLineSeries(lineSeriesNode, lineSeries);
+        mainNode->appendChildNode(lineSeriesNode);
+        qDebug() << "Color" << lineSeries->lineColor();
     }
 
-    _endPainter();
-}
-
-void IracemaLineSeriesView::_recreatePixmap(qreal width, qreal height)
-{
-    if (width <= 0 || height <= 0) return;
-
-    _pixmap = QPixmap(width, height);
-
-    _startPainter();
-
-    _pixmapPainter->fillRect(boundingRect(), QBrush(_backgroundColor));
-
-    _drawGrid();
-
-    _endPainter();
-}
-
-void IracemaLineSeriesView::_startPainter()
-{
-    _pixmapPainter->begin(&_pixmap);
-}
-
-void IracemaLineSeriesView::_endPainter()
-{
-    _pixmapPainter->end();
 }
 
 qreal IracemaLineSeriesView::_convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop)
@@ -209,16 +200,6 @@ void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list
         line->setParentItem(view);
         view->_lines.append(line);
     }
-}
-
-IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent)
-    : QQuickPaintedItem(parent)
-{
-    setMipmap(true);
-    setRenderTarget(InvertedYFramebufferObject);
-    setOpaquePainting(true);
-
-    connect(this, &IracemaLineSeriesView::gridSizeChanged, &IracemaLineSeriesView::onGridSizeChanged);
 }
 
 void IracemaLineSeriesView::addPoint(quint32 lineIndex, QPointF point)
@@ -245,7 +226,6 @@ void IracemaLineSeriesView::clearData()
     {
         line->clearData();
     }
-    _recreatePixmap(width(), height());
 }
 
 void IracemaLineSeriesView::clearLine(quint32 lineIndex)
@@ -263,31 +243,71 @@ void IracemaLineSeriesView::setGridColor(const QColor &newGridColor)
     if (_gridColor == newGridColor)
         return;
     _gridColor = newGridColor;
+    _gridMaterial->setColor(_gridColor);
     emit gridColorChanged();
 }
 
 void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     std::ignore = oldGeometry;
+    std::ignore = newGeometry;
+
+    _reDrawGrid = true;
+
+    qDebug() << "geochanged";
 
     if (_updateTimerId == -1)
     {
         _updateTimerId = startTimer(_updateTime, Qt::PreciseTimer);
     }
 
-    _recreatePixmap(newGeometry.width(), newGeometry.height());
 }
 
 void IracemaLineSeriesView::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == _updateTimerId)
     {
-        _drawLines();
         update();
     }
 }
 
-void IracemaLineSeriesView::paint(QPainter *painter)
+void IracemaLineSeriesView::_drawOneLine(QSGNode *mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial *lineMaterial)
 {
-    painter->drawPixmap(0, 0, _pixmap);
+    auto childNode = new QSGGeometryNode;
+
+    auto geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 2);
+    geometry->setLineWidth(lineWidth);
+    geometry->setDrawingMode(QSGGeometry::DrawLineStrip);
+    childNode->setGeometry(geometry);
+    childNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
+
+    childNode->setMaterial(lineMaterial);
+
+    QSGGeometry::Point2D *vertices = geometry->vertexDataAsPoint2D();
+
+    vertices[0].set(line.x1(), line.y1());
+    vertices[1].set(line.x2(), line.y2());
+
+    mainNode->appendChildNode(childNode);
+}
+
+QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
+{
+    qDebug() << "udpatePaintNode";
+
+    if (!oldNode)
+    {
+        oldNode = new QSGNode;
+    }
+
+    if (_reDrawGrid)
+    {
+        oldNode->removeAllChildNodes();
+        _drawGrid(oldNode);
+        _reDrawGrid = false;
+    }
+
+    _drawLines(oldNode);
+
+    return oldNode;
 }
