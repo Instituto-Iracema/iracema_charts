@@ -178,7 +178,6 @@ void IracemaLineSeriesView::_drawLines(QSGNode *mainNode)
         lineSeriesNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
         _drawLineSeries(lineSeriesNode, lineSeries);
         mainNode->appendChildNode(lineSeriesNode);
-        qDebug() << "Color" << lineSeries->lineColor();
     }
 
 }
@@ -254,8 +253,6 @@ void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRe
 
     _reDrawGrid = true;
 
-    qDebug() << "geochanged";
-
     if (_updateTimerId == -1)
     {
         _updateTimerId = startTimer(_updateTime, Qt::PreciseTimer);
@@ -293,8 +290,6 @@ void IracemaLineSeriesView::_drawOneLine(QSGNode *mainNode, QLineF line, qreal l
 
 QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    qDebug() << "udpatePaintNode";
-
     if (!oldNode)
     {
         oldNode = new QSGNode;
