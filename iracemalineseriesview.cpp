@@ -5,6 +5,7 @@
 #include <QRandomGenerator>
 #include <QSGGeometryNode>
 #include <QSGFlatColorMaterial>
+#include <QQuickItemGrabResult>
 
 IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent) : QQuickItem(parent)
 {
@@ -157,10 +158,16 @@ void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries
         qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width());
         qreal newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height());
         qreal newY2 = _convertValueToNewScale(line.p2().y(),lineSeries->yScaleBottom(), lineSeries->yScaleTop(),  0, height());
+
+        //Clip values to view boundaries
+        newY1 = std::max(0.0, std::min(newY1, height()));
+        newY2 = std::max(0.0, std::min(newY2, height()));
+
         if (invertY) {
             newY1 = height() - newY1;
             newY2 = height() - newY2;
         }
+
         QPointF newP1(newX1, newY1);
         QPointF newP2(newX2, newY2);
         QLineF newLine(newP1, newP2);
@@ -178,9 +185,7 @@ void IracemaLineSeriesView::_drawLines(QSGNode *mainNode)
         lineSeriesNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
         _drawLineSeries(lineSeriesNode, lineSeries);
         mainNode->appendChildNode(lineSeriesNode);
-        qDebug() << "Color" << lineSeries->lineColor();
     }
-
 }
 
 qreal IracemaLineSeriesView::_convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop)
@@ -254,8 +259,6 @@ void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRe
 
     _reDrawGrid = true;
 
-    qDebug() << "geochanged";
-
     if (_updateTimerId == -1)
     {
         _updateTimerId = startTimer(_updateTime, Qt::PreciseTimer);
@@ -265,7 +268,7 @@ void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRe
 
 void IracemaLineSeriesView::timerEvent(QTimerEvent *event)
 {
-    if (event->timerId() == _updateTimerId)
+    if (event->timerId() == _updateTimerId && !_isProcessingImage)
     {
         update();
     }
@@ -293,8 +296,6 @@ void IracemaLineSeriesView::_drawOneLine(QSGNode *mainNode, QLineF line, qreal l
 
 QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    qDebug() << "udpatePaintNode";
-
     if (!oldNode)
     {
         oldNode = new QSGNode;
