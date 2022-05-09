@@ -58,9 +58,10 @@ private:
     bool _reDrawGrid = true;
 
     int _updateTimerId = -1;
-    int _resizeTimerId = -1;
 
     bool _isResizing = false;
+
+    bool _isProcessingImage = false;
 
     void _drawGridHorizontal(QSGNode *mainNode);
     void _drawGridVertical(QSGNode *mainNode);
