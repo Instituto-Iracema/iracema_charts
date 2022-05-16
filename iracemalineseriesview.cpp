@@ -307,10 +307,10 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
     if (_reDrawGrid)
     {
         oldNode->removeAllChildNodes();
-        _drawGrid(oldNode);
-        _reDrawGrid = false;
         QSGNode *backgroundNode = new QSGSimpleRectNode(QRectF(0, 0, width(), height()), _backgroundColor);
         oldNode->appendChildNode(backgroundNode);
+        _drawGrid(oldNode);
+        _reDrawGrid = false;
     }
 
     _drawLines(oldNode);
