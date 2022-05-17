@@ -6,6 +6,8 @@
 #include <QSGGeometryNode>
 #include <QSGFlatColorMaterial>
 #include <QQuickItemGrabResult>
+#include <QSGSimpleRectNode>
+#include <QRectF>
 
 IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent) : QQuickItem(parent)
 {
@@ -231,6 +233,7 @@ void IracemaLineSeriesView::clearData()
     {
         line->clearData();
     }
+    _reDrawGrid = true;
 }
 
 void IracemaLineSeriesView::clearLine(quint32 lineIndex)
@@ -304,6 +307,8 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
     if (_reDrawGrid)
     {
         oldNode->removeAllChildNodes();
+        QSGNode *backgroundNode = new QSGSimpleRectNode(QRectF(0, 0, width(), height()), _backgroundColor);
+        oldNode->appendChildNode(backgroundNode);
         _drawGrid(oldNode);
         _reDrawGrid = false;
     }
