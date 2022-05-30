@@ -38,6 +38,9 @@ public:
     Q_INVOKABLE void addPoint(QPointF point);
     Q_INVOKABLE void addPoint(float x, float y);
     Q_INVOKABLE void applyBuffer();
+    Q_INVOKABLE QLineF at(int index);
+    Q_INVOKABLE QPointF pointAt(int index);
+    Q_INVOKABLE int count();
     Q_INVOKABLE void clearData();
 
     const QColor &lineColor() const;
