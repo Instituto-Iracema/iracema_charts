@@ -72,12 +72,9 @@ void IracemaLineSeries::_addPointToBuffer(QPointF point)
 {
     QLineF line;
     if (_dataBuffer.empty()) {
-        if (_data.empty())
-        {
+        if (_data.empty()) {
             line.setP1(point);
-        }
-        else
-        {
+        } else {
             line.setP1(_data.last().p2());
         }
     } else {
@@ -96,9 +93,7 @@ IracemaLineSeries::IracemaLineSeries(QQuickItem *parent) : QQuickItem(parent)
 void IracemaLineSeries::addData(QVector<QPointF> data)
 {
     for (QPointF point : data)
-    {
         _addPointToBuffer(point);
-    }
 }
 
 void IracemaLineSeries::addPoint(QPointF point)
@@ -118,6 +113,21 @@ void IracemaLineSeries::applyBuffer()
         _data.append(line);
     }
     _dataBuffer.clear();
+}
+
+QLineF IracemaLineSeries::at(int index)
+{
+    return _data.at(index);
+}
+
+QPointF IracemaLineSeries::pointAt(int index)
+{
+    return _data.at(index).p2();
+}
+
+int IracemaLineSeries::count()
+{
+    return _data.size();
 }
 
 void IracemaLineSeries::clearData()
