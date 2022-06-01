@@ -121,25 +121,92 @@ QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
                                                nullptr, nullptr, nullptr);
 }
 
+qreal IracemaLineSeriesView::yTickCount() const
+{
+    return _yTickCount;
+}
+
+void IracemaLineSeriesView::setYTickCount(qreal newYTickCount)
+{
+    if (qFuzzyCompare(_yTickCount, newYTickCount))
+        return;
+    _yTickCount = newYTickCount;
+    emit yTickCountChanged();
+}
+
+void IracemaLineSeriesView::setTickCount(qreal newTickCount)
+{
+    setYTickCount(newTickCount);
+    setXTickCount(newTickCount);
+}
+
+qreal IracemaLineSeriesView::xTickCount() const
+{
+    return _xTickCount;
+}
+
+void IracemaLineSeriesView::setXTickCount(qreal newXTickCount)
+{
+    if (qFuzzyCompare(_xTickCount, newXTickCount))
+        return;
+    _xTickCount = newXTickCount;
+    emit xTickCountChanged();
+}
+
+bool IracemaLineSeriesView::hasScales() const
+{
+    return _hasScales;
+}
+
+void IracemaLineSeriesView::setHasScales(bool newHasScales)
+{
+    if (_hasScales == newHasScales)
+        return;
+    _hasScales = newHasScales;
+    emit hasScalesChanged();
+}
+
 void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
 {
-    qreal currentPosition = _gridOffset.height();
-    while(currentPosition <= height())
-    {
-        QLineF line(0, currentPosition, width(), currentPosition);
+    qreal x;
+    qreal y;
+    qreal width;
+    qreal height;
+    _calculatePlotArea(x, y, width, height);
+    qreal limit = y + height;
+    qreal gridHeigth = 0;
+
+    if (_yTickCount)
+        gridHeigth = height / _yTickCount;
+    else
+        gridHeigth = _gridSize.height();
+
+    while (y <= limit) {
+        QLineF line(x, y, x+width, y);
         _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
-        currentPosition += _gridSize.height();
+        y += gridHeigth;
     }
 }
 
 void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
 {
-    qreal currentPosition = _gridOffset.width();
-    while(currentPosition <= width())
-    {
-        QLineF line(currentPosition, 0, currentPosition, height());
+    qreal x;
+    qreal y;
+    qreal width;
+    qreal height;
+    _calculatePlotArea(x, y, width, height);
+    qreal limit = x + width;
+    qreal gridWidth = 0;
+
+    if (_xTickCount)
+        gridWidth = width / _xTickCount;
+    else
+        gridWidth = _gridSize.width();
+
+    while (x <= limit) {
+        QLineF line(x, y, x, y+height);
         _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
-        currentPosition += _gridSize.width();
+        x += gridWidth;
     }
 }
 
@@ -153,21 +220,24 @@ void IracemaLineSeriesView::_drawGrid(QSGNode *mainNode)
 
 void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries *lineSeries, bool invertY)
 {
-
-    for (QLineF line : lineSeries->dataBuffer())
-    {
-        qreal newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, width());
-        qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width());
-        qreal newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height());
-        qreal newY2 = _convertValueToNewScale(line.p2().y(),lineSeries->yScaleBottom(), lineSeries->yScaleTop(),  0, height());
+    qreal x, y, width, height;
+    _calculatePlotArea(x, y, width, height);
+    for (QLineF line : lineSeries->dataBuffer()) {
+        qreal newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
+        qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
+        qreal newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height);
+        qreal newY2 = _convertValueToNewScale(line.p2().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height);
 
         //Clip values to view boundaries
-        newY1 = std::max(0.0, std::min(newY1, height()));
-        newY2 = std::max(0.0, std::min(newY2, height()));
+        newY1 = std::max(0.0, std::min(newY1, height));
+        newY2 = std::max(0.0, std::min(newY2, height));
 
         if (invertY) {
-            newY1 = height() - newY1;
-            newY2 = height() - newY2;
+            newY1 = this->height() - newY1 - (this->height() - height - y);
+            newY2 = this->height() - newY2 - (this->height() - height - y);
+        } else {
+            newY1 += y;
+            newY2 += y;
         }
 
         QPointF newP1(newX1, newY1);
@@ -198,6 +268,32 @@ qreal IracemaLineSeriesView::_convertValueToNewScale(qreal oldValue, qreal oldSc
     newValue += newScaleBottom;
 
     return newValue;
+}
+
+QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth, bool standard)
+{
+    if (!standard && _hasScales) {
+        x = this->width() * 0.1;
+        y = this->height() * 0.05;
+        width = this->width() * 0.85;
+        heigth = this->height() * 0.85;
+    } else {
+        x = 0;
+        y= 0;
+        width = this->width();
+        heigth = this->height();
+    }
+
+    return QRectF(x, y, width, heigth);
+}
+
+QRectF IracemaLineSeriesView::_calculatePlotArea(bool standard)
+{
+    qreal x, y, width, heigth;
+
+    _calculatePlotArea(x,y,width,heigth,standard);
+
+    return QRectF(x, y, width, heigth);
 }
 
 void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line)
@@ -305,7 +401,7 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
 
     if (_reDrawGrid) {
         oldNode->removeAllChildNodes();
-        QSGNode *backgroundNode = new QSGSimpleRectNode(QRectF(0, 0, width(), height()), _backgroundColor);
+        QSGNode *backgroundNode = new QSGSimpleRectNode(_calculatePlotArea(true), _backgroundColor);
         oldNode->appendChildNode(backgroundNode);
         _drawGrid(oldNode);
         _reDrawGrid = false;

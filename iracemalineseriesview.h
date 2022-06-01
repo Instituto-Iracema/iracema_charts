@@ -15,12 +15,16 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(QColor gridColor READ gridColor WRITE setGridColor NOTIFY gridColorChanged)
     Q_PROPERTY(QSizeF gridSize READ gridSize WRITE setGridSize NOTIFY gridSizeChanged)
     Q_PROPERTY(QSizeF gridOffset READ gridOffset WRITE setGridOffset NOTIFY gridOffsetChanged)
+    Q_PROPERTY(qreal xTickCount READ xTickCount WRITE setXTickCount NOTIFY xTickCountChanged)
+    Q_PROPERTY(qreal yTickCount READ yTickCount WRITE setYTickCount NOTIFY yTickCountChanged)
+    Q_PROPERTY(qreal tickCount WRITE setTickCount)
     Q_PROPERTY(unsigned int updateTime READ updateTime WRITE setUpdateTime NOTIFY updateTimeChanged)
     Q_PROPERTY(qreal gridLineWidth READ gridLineWidth WRITE setGridLineWidth NOTIFY gridLineWidthChanged)
     Q_PROPERTY(qreal xScaleBottom READ xScaleBottom WRITE setXScaleBottom NOTIFY xScaleBottomChanged)
     Q_PROPERTY(qreal xScaleTop READ xScaleTop WRITE setXScaleTop NOTIFY xScaleTopChanged)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines NOTIFY linesChanged)
+    Q_PROPERTY(bool hasScales READ hasScales WRITE setHasScales NOTIFY hasScalesChanged)
     QML_NAMED_ELEMENT(IracemaLineSeriesView)
 
 private:
@@ -63,6 +67,11 @@ private:
 
     bool _isProcessingImage = false;
 
+    bool _hasScales = false;
+
+    qreal _xTickCount = 0;
+    qreal _yTickCount = 0;
+
     void _drawGridHorizontal(QSGNode *mainNode);
     void _drawGridVertical(QSGNode *mainNode);
     void _drawGrid(QSGNode *mainNode);
@@ -70,6 +79,8 @@ private:
     void _drawLineSeries(QSGNode *mainNode, IracemaLineSeries *line, bool invertY = true);
     void _drawLines(QSGNode *mainNode);
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
+    QRectF _calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth, bool standard = false);
+    QRectF _calculatePlotArea(bool standard = false);
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
 
@@ -108,6 +119,17 @@ public:
     const QColor &backgroundColor() const;
     void setBackgroundColor(const QColor &newBackgroundColor);
 
+    bool hasScales() const;
+    void setHasScales(bool newHasScales);
+
+    qreal xTickCount() const;
+    void setXTickCount(qreal newXTickCount);
+
+    qreal yTickCount() const;
+    void setYTickCount(qreal newYTickCount);
+
+    void setTickCount(qreal newTickCount);
+
 signals:
     void gridColorChanged();
     void gridSizeChanged();
@@ -119,6 +141,9 @@ signals:
     void xScaleTopChanged();
     void backgroundColorChanged();
     void linesChanged();
+    void hasScalesChanged();
+    void xTickCountChanged();
+    void yTickCountChanged();
 
 private slots:
     void onGridSizeChanged();
