@@ -18,7 +18,7 @@ private:
     QColor _lineColor = Qt::black;
     QSGFlatColorMaterial *_lineMaterial;
     qreal _lineWidth = 1;
-    qreal _yScaleTop = 100;
+    qreal _yScaleTop = 1000;
     qreal _yScaleBottom = 0;
 
     QVector<QLineF> _data;
