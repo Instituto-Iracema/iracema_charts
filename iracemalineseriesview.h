@@ -7,6 +7,18 @@
 #include <QQuickItem>
 #include <QSGFlatColorMaterial>
 #include <QSizeF>
+#include <QBrush>
+#include <math.h>
+#include <QRandomGenerator>
+#include <QSGGeometryNode>
+#include <QSGFlatColorMaterial>
+#include <QQuickItemGrabResult>
+#include <QSGSimpleRectNode>
+#include <QRectF>
+#include <QSGSimpleTextureNode>
+#include <QSGImageNode>
+#include <QPixmap>
+#include <QQuickWindow>
 
 class IracemaLineSeriesView : public QQuickItem
 {
@@ -25,6 +37,9 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines NOTIFY linesChanged)
     Q_PROPERTY(bool hasScales READ hasScales WRITE setHasScales NOTIFY hasScalesChanged)
+    Q_PROPERTY(qreal horizontalScaleWidth READ HorizontalScaleWidth WRITE setHorizontalScaleWidth NOTIFY HorizontalScaleWidthChanged)
+    Q_PROPERTY(qreal verticalScaleHeigth READ verticalScaleHeigth WRITE setVerticalScaleHeigth NOTIFY verticalScaleHeigthChanged)
+    Q_PROPERTY(qreal plotAreaRigthPadding READ plotAreaRigthPadding WRITE setPlotAreaRigthPadding NOTIFY plotAreaRigthPaddingChanged)
     QML_NAMED_ELEMENT(IracemaLineSeriesView)
 
 private:
@@ -72,15 +87,22 @@ private:
     qreal _xTickCount = 0;
     qreal _yTickCount = 0;
 
+    qreal _horizontalScaleWidth = 50;
+    qreal _verticalScaleHeigth = 40;
+    qreal _plotAreaRigthPadding = _horizontalScaleWidth * 0.3;
+
     void _drawGridHorizontal(QSGNode *mainNode);
     void _drawGridVertical(QSGNode *mainNode);
     void _drawGrid(QSGNode *mainNode);
+    void _drawScaleLabel(QSGNode *mainNode, qreal x, qreal y, QString label, QTextOption textOption = QTextOption(Qt::AlignCenter));
     void _drawOneLine(QSGNode *mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial *lineMaterial);
     void _drawLineSeries(QSGNode *mainNode, IracemaLineSeries *line, bool invertY = true);
     void _drawLines(QSGNode *mainNode);
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
     QRectF _calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth, bool standard = false);
     QRectF _calculatePlotArea(bool standard = false);
+    qreal _yScaleTop();
+    qreal _yScaleBottom();
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
 
@@ -130,6 +152,15 @@ public:
 
     void setTickCount(qreal newTickCount);
 
+    qreal HorizontalScaleWidth() const;
+    void setHorizontalScaleWidth(qreal newHorizontalScaleWidth);
+
+    qreal verticalScaleHeigth() const;
+    void setVerticalScaleHeigth(qreal newVerticalScaleHeigth);
+
+    qreal plotAreaRigthPadding() const;
+    void setPlotAreaRigthPadding(qreal newPlotAreaRigthPadding);
+
 signals:
     void gridColorChanged();
     void gridSizeChanged();
@@ -144,6 +175,9 @@ signals:
     void hasScalesChanged();
     void xTickCountChanged();
     void yTickCountChanged();
+    void HorizontalScaleWidthChanged();
+    void verticalScaleHeigthChanged();
+    void plotAreaRigthPaddingChanged();
 
 private slots:
     void onGridSizeChanged();
