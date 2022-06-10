@@ -109,9 +109,8 @@ void IracemaLineSeries::addPoint(float x, float y)
 void IracemaLineSeries::applyBuffer()
 {
     for (QLineF line : qAsConst(_dataBuffer))
-    {
         _data.append(line);
-    }
+
     _dataBuffer.clear();
 }
 

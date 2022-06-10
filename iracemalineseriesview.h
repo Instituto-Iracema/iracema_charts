@@ -96,8 +96,8 @@ private:
     void _drawGrid(QSGNode *mainNode);
     void _drawScaleLabel(QSGNode *mainNode, qreal x, qreal y, QString label, QTextOption textOption = QTextOption(Qt::AlignCenter));
     void _drawOneLine(QSGNode *mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial *lineMaterial);
-    void _drawLineSeries(QSGNode *mainNode, IracemaLineSeries *line, bool invertY = true);
-    void _drawLines(QSGNode *mainNode);
+    void _drawLineSeries(QSGNode *mainNode, IracemaLineSeries *line, bool invertY = true, bool redrawAllData = false);
+    void _drawLines(QSGNode *mainNode, bool redrawAllData = false);
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
     QRectF _calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth, bool standard = false);
     QRectF _calculatePlotArea(bool standard = false);

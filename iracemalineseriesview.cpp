@@ -73,6 +73,7 @@ void IracemaLineSeriesView::setXScaleBottom(qreal newXScaleBottom)
         return;
     _xScaleBottom = newXScaleBottom;
     emit xScaleBottomChanged();
+    this->_reDrawGrid = true;
 }
 
 qreal IracemaLineSeriesView::xScaleTop() const
@@ -86,6 +87,7 @@ void IracemaLineSeriesView::setXScaleTop(qreal newXScaleTop)
         return;
     _xScaleTop = newXScaleTop;
     emit xScaleTopChanged();
+    this->_reDrawGrid = true;
 }
 
 const QColor &IracemaLineSeriesView::backgroundColor() const
@@ -310,11 +312,21 @@ void IracemaLineSeriesView::_drawScaleLabel(QSGNode *mainNode, qreal x, qreal y,
     mainNode->appendChildNode(childNode);
 }
 
-void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries *lineSeries, bool invertY)
+void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries *lineSeries, bool invertY, bool redrawAllData)
 {
     qreal x, y, width, height;
     _calculatePlotArea(x, y, width, height);
-    for (QLineF line : lineSeries->dataBuffer()) {
+    QVector<QLineF> dataToDraw;
+
+    if (redrawAllData) {
+        lineSeries->applyBuffer();
+        dataToDraw = lineSeries->data();
+    } else {
+        dataToDraw = lineSeries->dataBuffer();
+        lineSeries->applyBuffer();
+    }
+
+    for (QLineF line : dataToDraw) {
         qreal newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
         qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
         qreal newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height);
@@ -341,13 +353,12 @@ void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries
     lineSeries->applyBuffer();
 }
 
-void IracemaLineSeriesView::_drawLines(QSGNode *mainNode)
+void IracemaLineSeriesView::_drawLines(QSGNode *mainNode, bool redrawAllData)
 {
-    for (auto lineSeries : qAsConst(_lines))
-    {
+    for (auto lineSeries : qAsConst(_lines)) {
         QSGNode *lineSeriesNode = new QSGNode();
         lineSeriesNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
-        _drawLineSeries(lineSeriesNode, lineSeries);
+        _drawLineSeries(lineSeriesNode, lineSeries, true, redrawAllData);
         mainNode->appendChildNode(lineSeriesNode);
     }
 }
@@ -417,6 +428,8 @@ void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list
     if (view) {
         line->setParentItem(view);
         view->_lines.append(line);
+        connect(line, &IracemaLineSeries::yScaleTopChanged, view, [view] { view->_reDrawGrid = true; });
+        connect(line, &IracemaLineSeries::yScaleBottomChanged, view, [view] { view->_reDrawGrid = true; });
     }
 }
 
@@ -512,10 +525,10 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
         QSGNode *backgroundNode = new QSGSimpleRectNode(_calculatePlotArea(true), _backgroundColor);
         oldNode->appendChildNode(backgroundNode);
         _drawGrid(oldNode);
+        _drawLines(oldNode, true);
         _reDrawGrid = false;
-    }
-
-    _drawLines(oldNode);
+    } else
+        _drawLines(oldNode);
 
     return oldNode;
 }
