@@ -15,13 +15,15 @@ SOURCES += \
         iracemalineseries.cpp \
         iracemacharts_plugin.cpp \
         iracemacharts.cpp \
-        iracemalineseriesview.cpp
+        iracemalineseriesview.cpp \
+        iracemascalelabel.cpp
 
 HEADERS += \
         iracemalineseries.h \
         iracemacharts_plugin.h \
         iracemacharts.h \
-        iracemalineseriesview.h
+        iracemalineseriesview.h \
+        iracemascalelabel.h
 
 DISTFILES = qmldir
 

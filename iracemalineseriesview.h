@@ -2,6 +2,7 @@
 #define IRACEMALINESERIESVIEW_H
 
 #include "iracemalineseries.h"
+#include "iracemascalelabel.h"
 
 #include <QPainter>
 #include <QQuickItem>
@@ -29,18 +30,19 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(QSizeF gridOffset READ gridOffset WRITE setGridOffset NOTIFY gridOffsetChanged)
     Q_PROPERTY(qreal xTickCount READ xTickCount WRITE setXTickCount NOTIFY xTickCountChanged)
     Q_PROPERTY(qreal yTickCount READ yTickCount WRITE setYTickCount NOTIFY yTickCountChanged)
-    Q_PROPERTY(qreal tickCount WRITE setTickCount)
     Q_PROPERTY(unsigned int updateTime READ updateTime WRITE setUpdateTime NOTIFY updateTimeChanged)
     Q_PROPERTY(qreal gridLineWidth READ gridLineWidth WRITE setGridLineWidth NOTIFY gridLineWidthChanged)
     Q_PROPERTY(qreal xScaleBottom READ xScaleBottom WRITE setXScaleBottom NOTIFY xScaleBottomChanged)
     Q_PROPERTY(qreal xScaleTop READ xScaleTop WRITE setXScaleTop NOTIFY xScaleTopChanged)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines NOTIFY linesChanged)
+    Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> verticalScaleLabels READ verticalScaleLabels NOTIFY linesChanged)
+    Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> horizontalScaleLabels READ horizontalScaleLabels NOTIFY linesChanged)
     Q_PROPERTY(bool hasScales READ hasScales WRITE setHasScales NOTIFY hasScalesChanged)
     Q_PROPERTY(qreal horizontalScaleWidth READ HorizontalScaleWidth WRITE setHorizontalScaleWidth NOTIFY HorizontalScaleWidthChanged)
     Q_PROPERTY(qreal verticalScaleHeigth READ verticalScaleHeigth WRITE setVerticalScaleHeigth NOTIFY verticalScaleHeigthChanged)
     Q_PROPERTY(qreal plotAreaRigthPadding READ plotAreaRigthPadding WRITE setPlotAreaRigthPadding NOTIFY plotAreaRigthPaddingChanged)
-    QML_NAMED_ELEMENT(IracemaLineSeriesView)
+    QML_NAMED_ELEMENT(IracemaChart)
 
 private:
     // QProperties
@@ -71,7 +73,12 @@ private:
     unsigned int _resizeTime = 500;
 
     QList<IracemaLineSeries *> _lines;
+    QList<IracemaScaleLabel *> _verticalScaleLabels;
+    QList<IracemaScaleLabel *> _horizontalScaleLabels;
     QQmlListProperty<IracemaLineSeries> lines();
+    QQmlListProperty<IracemaScaleLabel> verticalScaleLabels();
+    QQmlListProperty<IracemaScaleLabel> horizontalScaleLabels();
+
 
     QSGFlatColorMaterial *_gridMaterial;
     bool _reDrawGrid = true;
@@ -99,12 +106,15 @@ private:
     void _drawLineSeries(QSGNode *mainNode, IracemaLineSeries *line, bool invertY = true, bool redrawAllData = false);
     void _drawLines(QSGNode *mainNode, bool redrawAllData = false);
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
-    QRectF _calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth, bool standard = false);
-    QRectF _calculatePlotArea(bool standard = false);
+    QRectF _calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth);
+    QRectF _calculatePlotArea();
+
     qreal _yScaleTop();
     qreal _yScaleBottom();
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
+    static void appendHorizontalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label);
+    static void appendVerticalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label);
 
 public:
     explicit IracemaLineSeriesView(QQuickItem *parent = nullptr);
@@ -150,8 +160,6 @@ public:
     qreal yTickCount() const;
     void setYTickCount(qreal newYTickCount);
 
-    void setTickCount(qreal newTickCount);
-
     qreal HorizontalScaleWidth() const;
     void setHorizontalScaleWidth(qreal newHorizontalScaleWidth);
 
@@ -178,6 +186,8 @@ signals:
     void HorizontalScaleWidthChanged();
     void verticalScaleHeigthChanged();
     void plotAreaRigthPaddingChanged();
+    void verticalScaleLabelsChanged();
+    void horizontalScaleLabelsChanged();
 
 private slots:
     void onGridSizeChanged();

@@ -114,6 +114,18 @@ QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
                                                nullptr, nullptr, nullptr);
 }
 
+QQmlListProperty<IracemaScaleLabel> IracemaLineSeriesView::verticalScaleLabels()
+{
+    return QQmlListProperty<IracemaScaleLabel>(this, nullptr, &IracemaLineSeriesView::appendVerticalScaleLabel,
+                                               nullptr, nullptr, nullptr);
+}
+
+QQmlListProperty<IracemaScaleLabel> IracemaLineSeriesView::horizontalScaleLabels()
+{
+    return QQmlListProperty<IracemaScaleLabel>(this, nullptr, &IracemaLineSeriesView::appendHorizontalScaleLabel,
+                                               nullptr, nullptr, nullptr);
+}
+
 qreal IracemaLineSeriesView::plotAreaRigthPadding() const
 {
     return _plotAreaRigthPadding;
@@ -166,12 +178,6 @@ void IracemaLineSeriesView::setYTickCount(qreal newYTickCount)
     emit yTickCountChanged();
 }
 
-void IracemaLineSeriesView::setTickCount(qreal newTickCount)
-{
-    setYTickCount(newTickCount);
-    setXTickCount(newTickCount);
-}
-
 qreal IracemaLineSeriesView::xTickCount() const
 {
     return _xTickCount;
@@ -200,11 +206,9 @@ void IracemaLineSeriesView::setHasScales(bool newHasScales)
 
 void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
 {
-    qreal x;
-    qreal y;
-    qreal width;
-    qreal height;
-    _calculatePlotArea(x, y, width, height);
+    qreal x, y, width, height;
+    QRectF plotArea =  _calculatePlotArea(x, y, width, height);
+    qreal currentY = y;
     qreal limit = y + height;
     qreal gridHeigth = 0;
     qreal labelValue = _yScaleTop();
@@ -221,31 +225,34 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
         labelValueInterval = labelValue / (height / gridHeigth);
     }
 
-    while (y <= limit || drawedGridLines < GRID_LINES_TO_DRAW) {
-        if ( y > limit) {
-            y = limit;
+    while (currentY <= limit || drawedGridLines < GRID_LINES_TO_DRAW) {
+        if ( currentY > limit) {
+            currentY = limit;
             labelValue = _yScaleBottom();
         }
 
-        QLineF line(_horizontalScaleWidth * 0.95, y, x+width, y);
+        QLineF line(_horizontalScaleWidth * 0.95, currentY, x+width, currentY);
         _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
         drawedGridLines++;
 
         if (_hasScales)
-            _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, y - 10, QString::number((int)labelValue), QTextOption(Qt::AlignRight));
+            _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, currentY - 10, QString::number((int)labelValue), QTextOption(Qt::AlignRight));
 
-        y += gridHeigth;
+        currentY += gridHeigth;
         labelValue -= labelValueInterval;
+    }
+
+    for (auto label: qAsConst(_verticalScaleLabels)) {
+        qreal newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
+        _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, newY - 10, label->scaleText(), QTextOption(Qt::AlignRight));
     }
 }
 
 void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
 {
-    qreal x;
-    qreal y;
-    qreal width;
-    qreal height;
+    qreal x, y, width, height;
     _calculatePlotArea(x, y, width, height);
+    qreal currentX = x;
     qreal limit = x + width;
     qreal gridWidth = 0;
     qreal labelValue = 0;
@@ -262,21 +269,28 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
         labelValueInterval = _xScaleTop / (width / gridWidth);
     }
 
-    while (x <= limit ||  drawedGridLines < GRID_LINES_TO_DRAW) {
-        if ( x > limit) {
-            x = limit;
+    while (currentX <= limit ||  drawedGridLines < GRID_LINES_TO_DRAW) {
+        if (currentX > limit) {
+            currentX = limit;
             labelValue = _xScaleTop;
         }
 
-        QLineF line(x, y, x, (_hasScales? y + height + _verticalScaleHeigth * 0.1 : y+height));
+        QLineF line(currentX, y, currentX, (_hasScales? y + height + _verticalScaleHeigth * 0.1 : y+height));
         _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
         drawedGridLines++;
 
         if (_hasScales)
-            _drawScaleLabel(mainNode, x - 25, (_hasScales? y + height + _verticalScaleHeigth * 0.15 : y + height), QString::number((int)labelValue), QTextOption(Qt::AlignHCenter));
+            _drawScaleLabel(mainNode, currentX - 25, (_hasScales? y + height + _verticalScaleHeigth * 0.15 : y + height), QString::number((int)labelValue), QTextOption(Qt::AlignHCenter));
 
-        x += gridWidth;
+        currentX += gridWidth;
         labelValue += labelValueInterval;
+    }
+
+    for (auto label: _horizontalScaleLabels) {
+        qreal newX = _convertValueToNewScale(label->scalePoint(), _xScaleBottom, _xScaleTop, x, x+width);
+        // center label component
+        newX -= 25;
+        _drawScaleLabel(mainNode, newX , (_hasScales? y + height + _verticalScaleHeigth * 0.15 : y + height), label->scaleText(), QTextOption(Qt::AlignHCenter));
     }
 }
 
@@ -326,7 +340,7 @@ void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries
         lineSeries->applyBuffer();
     }
 
-    for (QLineF line : dataToDraw) {
+    for (QLineF line : qAsConst(dataToDraw)) {
         qreal newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
         qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
         qreal newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height);
@@ -373,9 +387,9 @@ qreal IracemaLineSeriesView::_convertValueToNewScale(qreal oldValue, qreal oldSc
     return newValue;
 }
 
-QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth, bool standard)
+QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth)
 {
-    if (!standard && _hasScales) {
+    if (_hasScales) {
         x = _horizontalScaleWidth;
         y = _verticalScaleHeigth * 0.25;
         width = this->width() - _horizontalScaleWidth - _plotAreaRigthPadding;
@@ -390,13 +404,11 @@ QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &widt
     return QRectF(x, y, width, heigth);
 }
 
-QRectF IracemaLineSeriesView::_calculatePlotArea(bool standard)
+QRectF IracemaLineSeriesView::_calculatePlotArea()
 {
     qreal x, y, width, heigth;
 
-    _calculatePlotArea(x,y,width,heigth,standard);
-
-    return QRectF(x, y, width, heigth);
+    return _calculatePlotArea(x,y,width,heigth);
 }
 
 qreal IracemaLineSeriesView::_yScaleTop()
@@ -430,6 +442,26 @@ void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list
         view->_lines.append(line);
         connect(line, &IracemaLineSeries::yScaleTopChanged, view, [view] { view->_reDrawGrid = true; });
         connect(line, &IracemaLineSeries::yScaleBottomChanged, view, [view] { view->_reDrawGrid = true; });
+    }
+}
+
+void IracemaLineSeriesView::appendHorizontalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label)
+{
+    IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
+
+    if (view) {
+        label->setParentItem(view);
+        view->_horizontalScaleLabels.append(label);
+    }
+}
+
+void IracemaLineSeriesView::appendVerticalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label)
+{
+    IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
+
+    if (view) {
+        label->setParentItem(view);
+        view->_verticalScaleLabels.append(label);
     }
 }
 
@@ -522,7 +554,7 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
 
     if (_reDrawGrid) {
         oldNode->removeAllChildNodes();
-        QSGNode *backgroundNode = new QSGSimpleRectNode(_calculatePlotArea(true), _backgroundColor);
+        QSGNode *backgroundNode = new QSGSimpleRectNode(QRectF(0, 0, this->width(), this->height()), _backgroundColor);
         oldNode->appendChildNode(backgroundNode);
         _drawGrid(oldNode);
         _drawLines(oldNode, true);
