@@ -30,7 +30,6 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(QSizeF gridOffset READ gridOffset WRITE setGridOffset NOTIFY gridOffsetChanged)
     Q_PROPERTY(qreal xTickCount READ xTickCount WRITE setXTickCount NOTIFY xTickCountChanged)
     Q_PROPERTY(qreal yTickCount READ yTickCount WRITE setYTickCount NOTIFY yTickCountChanged)
-    Q_PROPERTY(qreal tickCount WRITE setTickCount)
     Q_PROPERTY(unsigned int updateTime READ updateTime WRITE setUpdateTime NOTIFY updateTimeChanged)
     Q_PROPERTY(qreal gridLineWidth READ gridLineWidth WRITE setGridLineWidth NOTIFY gridLineWidthChanged)
     Q_PROPERTY(qreal xScaleBottom READ xScaleBottom WRITE setXScaleBottom NOTIFY xScaleBottomChanged)
@@ -160,8 +159,6 @@ public:
 
     qreal yTickCount() const;
     void setYTickCount(qreal newYTickCount);
-
-    void setTickCount(qreal newTickCount);
 
     qreal HorizontalScaleWidth() const;
     void setHorizontalScaleWidth(qreal newHorizontalScaleWidth);

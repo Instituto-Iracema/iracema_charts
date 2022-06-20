@@ -178,12 +178,6 @@ void IracemaLineSeriesView::setYTickCount(qreal newYTickCount)
     emit yTickCountChanged();
 }
 
-void IracemaLineSeriesView::setTickCount(qreal newTickCount)
-{
-    setYTickCount(newTickCount);
-    setXTickCount(newTickCount);
-}
-
 qreal IracemaLineSeriesView::xTickCount() const
 {
     return _xTickCount;
@@ -346,7 +340,7 @@ void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries
         lineSeries->applyBuffer();
     }
 
-    for (QLineF line : dataToDraw) {
+    for (QLineF line : qAsConst(dataToDraw)) {
         qreal newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
         qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
         qreal newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height);
