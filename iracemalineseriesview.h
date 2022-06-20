@@ -42,7 +42,7 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(qreal horizontalScaleWidth READ HorizontalScaleWidth WRITE setHorizontalScaleWidth NOTIFY HorizontalScaleWidthChanged)
     Q_PROPERTY(qreal verticalScaleHeigth READ verticalScaleHeigth WRITE setVerticalScaleHeigth NOTIFY verticalScaleHeigthChanged)
     Q_PROPERTY(qreal plotAreaRigthPadding READ plotAreaRigthPadding WRITE setPlotAreaRigthPadding NOTIFY plotAreaRigthPaddingChanged)
-    QML_NAMED_ELEMENT(IracemaLineSeriesView)
+    QML_NAMED_ELEMENT(IracemaChart)
 
 private:
     // QProperties
