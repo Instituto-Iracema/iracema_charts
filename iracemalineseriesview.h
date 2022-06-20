@@ -2,6 +2,7 @@
 #define IRACEMALINESERIESVIEW_H
 
 #include "iracemalineseries.h"
+#include "iracemascalelabel.h"
 
 #include <QPainter>
 #include <QQuickItem>
@@ -36,6 +37,8 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(qreal xScaleTop READ xScaleTop WRITE setXScaleTop NOTIFY xScaleTopChanged)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines NOTIFY linesChanged)
+    Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> verticalScaleLabels READ verticalScaleLabels NOTIFY linesChanged)
+    Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> horizontalScaleLabels READ horizontalScaleLabels NOTIFY linesChanged)
     Q_PROPERTY(bool hasScales READ hasScales WRITE setHasScales NOTIFY hasScalesChanged)
     Q_PROPERTY(qreal horizontalScaleWidth READ HorizontalScaleWidth WRITE setHorizontalScaleWidth NOTIFY HorizontalScaleWidthChanged)
     Q_PROPERTY(qreal verticalScaleHeigth READ verticalScaleHeigth WRITE setVerticalScaleHeigth NOTIFY verticalScaleHeigthChanged)
@@ -71,7 +74,12 @@ private:
     unsigned int _resizeTime = 500;
 
     QList<IracemaLineSeries *> _lines;
+    QList<IracemaScaleLabel *> _verticalScaleLabels;
+    QList<IracemaScaleLabel *> _horizontalScaleLabels;
     QQmlListProperty<IracemaLineSeries> lines();
+    QQmlListProperty<IracemaScaleLabel> verticalScaleLabels();
+    QQmlListProperty<IracemaScaleLabel> horizontalScaleLabels();
+
 
     QSGFlatColorMaterial *_gridMaterial;
     bool _reDrawGrid = true;
@@ -105,6 +113,8 @@ private:
     qreal _yScaleBottom();
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
+    static void appendHorizontalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label);
+    static void appendVerticalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label);
 
 public:
     explicit IracemaLineSeriesView(QQuickItem *parent = nullptr);
@@ -178,6 +188,8 @@ signals:
     void HorizontalScaleWidthChanged();
     void verticalScaleHeigthChanged();
     void plotAreaRigthPaddingChanged();
+    void verticalScaleLabelsChanged();
+    void horizontalScaleLabelsChanged();
 
 private slots:
     void onGridSizeChanged();
