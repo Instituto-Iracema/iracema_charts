@@ -393,9 +393,9 @@ qreal IracemaLineSeriesView::_convertValueToNewScale(qreal oldValue, qreal oldSc
     return newValue;
 }
 
-QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth, bool standard)
+QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth)
 {
-    if (!standard && _hasScales) {
+    if (_hasScales) {
         x = _horizontalScaleWidth;
         y = _verticalScaleHeigth * 0.25;
         width = this->width() - _horizontalScaleWidth - _plotAreaRigthPadding;
@@ -410,13 +410,11 @@ QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &widt
     return QRectF(x, y, width, heigth);
 }
 
-QRectF IracemaLineSeriesView::_calculatePlotArea(bool standard)
+QRectF IracemaLineSeriesView::_calculatePlotArea()
 {
     qreal x, y, width, heigth;
 
-    _calculatePlotArea(x,y,width,heigth,standard);
-
-    return QRectF(x, y, width, heigth);
+    return _calculatePlotArea(x,y,width,heigth);
 }
 
 qreal IracemaLineSeriesView::_yScaleTop()
@@ -562,7 +560,7 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
 
     if (_reDrawGrid) {
         oldNode->removeAllChildNodes();
-        QSGNode *backgroundNode = new QSGSimpleRectNode(_calculatePlotArea(true), _backgroundColor);
+        QSGNode *backgroundNode = new QSGSimpleRectNode(QRectF(0, 0, this->width(), this->height()), _backgroundColor);
         oldNode->appendChildNode(backgroundNode);
         _drawGrid(oldNode);
         _drawLines(oldNode, true);

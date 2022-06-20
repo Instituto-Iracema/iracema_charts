@@ -107,8 +107,9 @@ private:
     void _drawLineSeries(QSGNode *mainNode, IracemaLineSeries *line, bool invertY = true, bool redrawAllData = false);
     void _drawLines(QSGNode *mainNode, bool redrawAllData = false);
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
-    QRectF _calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth, bool standard = false);
-    QRectF _calculatePlotArea(bool standard = false);
+    QRectF _calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth);
+    QRectF _calculatePlotArea();
+
     qreal _yScaleTop();
     qreal _yScaleBottom();
 
