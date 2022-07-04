@@ -36,8 +36,8 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(qreal xScaleTop READ xScaleTop WRITE setXScaleTop NOTIFY xScaleTopChanged)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines NOTIFY linesChanged)
-    Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> verticalScaleLabels READ verticalScaleLabels NOTIFY linesChanged)
-    Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> horizontalScaleLabels READ horizontalScaleLabels NOTIFY linesChanged)
+    Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> verticalScaleLabels READ verticalScaleLabels NOTIFY verticalScaleLabelsChanged)
+    Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> horizontalScaleLabels READ horizontalScaleLabels NOTIFY horizontalScaleLabelsChanged)
     Q_PROPERTY(bool hasScales READ hasScales WRITE setHasScales NOTIFY hasScalesChanged)
     Q_PROPERTY(qreal horizontalScaleWidth READ HorizontalScaleWidth WRITE setHorizontalScaleWidth NOTIFY HorizontalScaleWidthChanged)
     Q_PROPERTY(qreal verticalScaleHeigth READ verticalScaleHeigth WRITE setVerticalScaleHeigth NOTIFY verticalScaleHeigthChanged)
@@ -81,7 +81,9 @@ private:
 
 
     QSGFlatColorMaterial *_gridMaterial;
-    bool _reDrawGrid = true;
+    bool _redrawGrid = true;
+    bool _redrawLines = true;
+    bool _redrawPeakLabels = true;
 
     int _updateTimerId = -1;
 
@@ -98,13 +100,15 @@ private:
     qreal _verticalScaleHeigth = 40;
     qreal _plotAreaRigthPadding = _horizontalScaleWidth * 0.3;
 
+    void _setRedrawAll();
     void _drawGridHorizontal(QSGNode *mainNode);
     void _drawGridVertical(QSGNode *mainNode);
     void _drawGrid(QSGNode *mainNode);
     void _drawScaleLabel(QSGNode *mainNode, qreal x, qreal y, QString label, QTextOption textOption = QTextOption(Qt::AlignCenter));
     void _drawOneLine(QSGNode *mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial *lineMaterial);
     void _drawLineSeries(QSGNode *mainNode, IracemaLineSeries *line, bool invertY = true, bool redrawAllData = false);
-    void _drawLines(QSGNode *mainNode, bool redrawAllData = false);
+    void _drawLines(QSGNode *lineSeriesNode, bool redrawAllData = false);
+    void _drawPeaksLabels(bool redrawAll = false);
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
     QRectF _calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth);
     QRectF _calculatePlotArea();
@@ -169,6 +173,8 @@ public:
     qreal plotAreaRigthPadding() const;
     void setPlotAreaRigthPadding(qreal newPlotAreaRigthPadding);
 
+    void setReDrawGrid(bool newReDrawGrid);
+
 signals:
     void gridColorChanged();
     void gridSizeChanged();
@@ -200,6 +206,13 @@ protected:
     void timerEvent(QTimerEvent *event);
 
     QSGNode *updatePaintNode(QSGNode * oldNode, UpdatePaintNodeData *);
+
+    // Nodes pointers
+    QSGNode* _backgroundLayer;
+    QSGNode* _gridLayer;
+    QSGNode* _linesLayer;
+    QSGNode* _peakLabelLayer;
+
 };
 
 #endif // IRACEMALINESERIESVIEW_H
