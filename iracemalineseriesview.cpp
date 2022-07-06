@@ -73,7 +73,7 @@ void IracemaLineSeriesView::setXScaleBottom(qreal newXScaleBottom)
         return;
     _xScaleBottom = newXScaleBottom;
     emit xScaleBottomChanged();
-    this->_reDrawGrid = true;
+    this->_setRedrawAll();
 }
 
 qreal IracemaLineSeriesView::xScaleTop() const
@@ -87,7 +87,7 @@ void IracemaLineSeriesView::setXScaleTop(qreal newXScaleTop)
         return;
     _xScaleTop = newXScaleTop;
     emit xScaleTopChanged();
-    this->_reDrawGrid = true;
+    this->_setRedrawAll();
 }
 
 const QColor &IracemaLineSeriesView::backgroundColor() const
@@ -105,7 +105,7 @@ void IracemaLineSeriesView::setBackgroundColor(const QColor &newBackgroundColor)
 
 void IracemaLineSeriesView::onGridSizeChanged()
 {
-    _reDrawGrid = true;
+    _redrawGrid = true;
 }
 
 QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
@@ -124,6 +124,13 @@ QQmlListProperty<IracemaScaleLabel> IracemaLineSeriesView::horizontalScaleLabels
 {
     return QQmlListProperty<IracemaScaleLabel>(this, nullptr, &IracemaLineSeriesView::appendHorizontalScaleLabel,
                                                nullptr, nullptr, nullptr);
+}
+
+void IracemaLineSeriesView::_setRedrawAll()
+{
+    this->_redrawGrid = true;
+    this->_redrawLines = true;
+    this->_redrawPeakLabels = true;
 }
 
 qreal IracemaLineSeriesView::plotAreaRigthPadding() const
@@ -286,7 +293,7 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
         labelValue += labelValueInterval;
     }
 
-    for (auto label: _horizontalScaleLabels) {
+    for (auto label: qAsConst(_horizontalScaleLabels)) {
         qreal newX = _convertValueToNewScale(label->scalePoint(), _xScaleBottom, _xScaleTop, x, x+width);
         // center label component
         newX -= 25;
@@ -333,11 +340,11 @@ void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries
     QVector<QLineF> dataToDraw;
 
     if (redrawAllData) {
-        lineSeries->applyBuffer();
+        lineSeries->applyDataBuffer();
         dataToDraw = lineSeries->data();
     } else {
         dataToDraw = lineSeries->dataBuffer();
-        lineSeries->applyBuffer();
+        lineSeries->applyDataBuffer();
     }
 
     for (QLineF line : qAsConst(dataToDraw)) {
@@ -363,8 +370,6 @@ void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries
         QLineF newLine(newP1, newP2);
         _drawOneLine(mainNode, newLine, lineSeries->lineWidth(), lineSeries->lineMaterial());
     }
-
-    lineSeries->applyBuffer();
 }
 
 void IracemaLineSeriesView::_drawLines(QSGNode *mainNode, bool redrawAllData)
@@ -374,6 +379,33 @@ void IracemaLineSeriesView::_drawLines(QSGNode *mainNode, bool redrawAllData)
         lineSeriesNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
         _drawLineSeries(lineSeriesNode, lineSeries, true, redrawAllData);
         mainNode->appendChildNode(lineSeriesNode);
+    }
+}
+
+void IracemaLineSeriesView::_drawPeaksLabels(bool redrawAll)
+{
+    QRectF rectangle = _calculatePlotArea();
+    qreal yScaleTop = _yScaleTop();
+    qreal yScaleBottom = _yScaleBottom();
+    QList<IracemaPointLabel*> labelsToDraw;
+
+    for (auto lineSeries : qAsConst(_lines)) {
+        if(redrawAll){
+            lineSeries->applyPointLabelsBuffer();
+            labelsToDraw = lineSeries->pointLabels();
+        } else {
+            labelsToDraw = lineSeries->pointLabelsBuffer();
+            lineSeries->applyPointLabelsBuffer();
+        }
+
+        for (auto pointLabel : qAsConst(labelsToDraw)){
+            QSGNode *label = new QSGNode();
+            label->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
+            qreal newX = _convertValueToNewScale(pointLabel->graphPoint().x(), _xScaleBottom, _xScaleTop, rectangle.x(), rectangle.right());
+            qreal newY = _convertValueToNewScale(pointLabel->graphPoint().y(), yScaleBottom, yScaleTop, rectangle.bottom(), rectangle.top());
+            _drawScaleLabel(label, newX - 25, newY - 10, pointLabel->text(), QTextOption(Qt::AlignHCenter));
+            _peakLabelLayer->appendChildNode(label);
+        }
     }
 }
 
@@ -440,8 +472,9 @@ void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list
     if (view) {
         line->setParentItem(view);
         view->_lines.append(line);
-        connect(line, &IracemaLineSeries::yScaleTopChanged, view, [view] { view->_reDrawGrid = true; });
-        connect(line, &IracemaLineSeries::yScaleBottomChanged, view, [view] { view->_reDrawGrid = true; });
+        connect(line, &IracemaLineSeries::yScaleTopChanged, view, [view] { view->_setRedrawAll(); });
+        connect(line, &IracemaLineSeries::yScaleBottomChanged, view, [view] { view->_setRedrawAll(); });
+        connect(line, &IracemaLineSeries::graphPointLabelsChanged, view, [view] { view->_redrawPeakLabels = true; });
     }
 }
 
@@ -486,7 +519,7 @@ void IracemaLineSeriesView::clearData()
     for (auto line : qAsConst(_lines))
         line->clearData();
 
-    _reDrawGrid = true;
+    _redrawGrid = true;
 }
 
 void IracemaLineSeriesView::clearLine(quint32 lineIndex)
@@ -513,7 +546,7 @@ void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRe
     std::ignore = oldGeometry;
     std::ignore = newGeometry;
 
-    _reDrawGrid = true;
+    _redrawGrid = true;
 
     if (_updateTimerId == -1)
         _updateTimerId = startTimer(_updateTime, Qt::PreciseTimer);
@@ -550,17 +583,35 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
 {
     if (!oldNode) {
         oldNode = new QSGNode;
+        _backgroundLayer = new QSGSimpleRectNode(QRectF(0, 0, this->width(), this->height()), _backgroundColor);
+        _gridLayer = new QSGNode;
+        _peakLabelLayer = new QSGNode;
+        oldNode->appendChildNode(_backgroundLayer);
+        oldNode->appendChildNode(_gridLayer);
+        oldNode->appendChildNode(_peakLabelLayer);
     }
 
-    if (_reDrawGrid) {
-        oldNode->removeAllChildNodes();
-        QSGNode *backgroundNode = new QSGSimpleRectNode(QRectF(0, 0, this->width(), this->height()), _backgroundColor);
-        oldNode->appendChildNode(backgroundNode);
-        _drawGrid(oldNode);
-        _drawLines(oldNode, true);
-        _reDrawGrid = false;
+    if (_redrawGrid) {
+        oldNode->removeChildNode(_gridLayer);
+        delete(_gridLayer);
+        _gridLayer = new QSGNode;
+        _drawGrid(_gridLayer);
+        _drawLines(_gridLayer, true);
+        _redrawGrid = false;
+        _redrawPeakLabels = true;
+        oldNode->insertChildNodeAfter(_gridLayer,_backgroundLayer);
     } else
-        _drawLines(oldNode);
+        _drawLines(_gridLayer);
+
+    if(_redrawPeakLabels){
+        oldNode->removeChildNode(_peakLabelLayer);
+        delete(_peakLabelLayer);
+        _peakLabelLayer = new QSGNode;
+        _drawPeaksLabels(true);
+        _redrawPeakLabels = false;
+        oldNode->insertChildNodeAfter(_peakLabelLayer,_gridLayer);
+    } else
+        _drawPeaksLabels();
 
     return oldNode;
 }

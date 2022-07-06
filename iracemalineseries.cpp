@@ -32,9 +32,19 @@ const QVector<QLineF> &IracemaLineSeries::data() const
     return _data;
 }
 
+const QList<IracemaPointLabel *> &IracemaLineSeries::pointLabels() const
+{
+    return _graphPointLabels;
+}
+
 const QVector<QLineF> &IracemaLineSeries::dataBuffer() const
 {
     return _dataBuffer;
+}
+
+const QList<IracemaPointLabel *> IracemaLineSeries::pointLabelsBuffer()
+{
+    return this->_graphPointLabelsBuffer;
 }
 
 qreal IracemaLineSeries::yScaleTop() const
@@ -90,6 +100,12 @@ IracemaLineSeries::IracemaLineSeries(QQuickItem *parent) : QQuickItem(parent)
     _lineMaterial->setColor(_lineColor);
 }
 
+IracemaLineSeries::~IracemaLineSeries()
+{
+    _graphPointLabelsBuffer.clear();
+    _graphPointLabels.clear();
+}
+
 void IracemaLineSeries::addData(QVector<QPointF> data)
 {
     for (QPointF point : data)
@@ -106,12 +122,20 @@ void IracemaLineSeries::addPoint(float x, float y)
     _addPointToBuffer(QPointF(x, y));
 }
 
-void IracemaLineSeries::applyBuffer()
+void IracemaLineSeries::applyDataBuffer()
 {
     for (QLineF line : qAsConst(_dataBuffer))
         _data.append(line);
 
     _dataBuffer.clear();
+}
+
+void IracemaLineSeries::applyPointLabelsBuffer()
+{
+    for (auto pointLabel : qAsConst(_graphPointLabelsBuffer))
+        _graphPointLabels.append(pointLabel);
+
+    _graphPointLabelsBuffer.clear();
 }
 
 QLineF IracemaLineSeries::at(int index)
@@ -133,4 +157,33 @@ void IracemaLineSeries::clearData()
 {
     _data.clear();
     _dataBuffer.clear();
+}
+
+void IracemaLineSeries::appendGraphPointLabels(QPointF position, QString text)
+{
+    auto label = new IracemaPointLabel(position, text);
+    this->_graphPointLabelsBuffer.append(label);
+    emit this->graphPointLabelsChanged();
+}
+
+void IracemaLineSeries::appendGraphPointLabels(qreal x, qreal y, QString text)
+{
+    appendGraphPointLabels(QPointF(x, y), text);
+}
+
+QQmlListProperty<IracemaPointLabel> IracemaLineSeries::graphPointLabels()
+{
+    return QQmlListProperty<IracemaPointLabel>(this, nullptr, &IracemaLineSeries::appendGraphPointLabels,
+                                               nullptr, nullptr, nullptr);
+}
+
+void IracemaLineSeries::appendGraphPointLabels(QQmlListProperty<IracemaPointLabel> *list, IracemaPointLabel *label)
+{
+    IracemaLineSeries *line = qobject_cast<IracemaLineSeries *>(list->object);
+
+    if (line) {
+        label->setParentItem(line);
+        line->_graphPointLabelsBuffer.append(label);
+        emit line->graphPointLabelsChanged();
+    }
 }
