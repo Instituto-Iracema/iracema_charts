@@ -101,6 +101,7 @@ private:
     qreal _plotAreaRigthPadding = _horizontalScaleWidth * 0.3;
 
     void _setRedrawAll();
+    qreal truncate(qreal value, int numberOfDigits) const;
     void _drawGridHorizontal(QSGNode *mainNode);
     void _drawGridVertical(QSGNode *mainNode);
     void _drawGrid(QSGNode *mainNode);

@@ -211,6 +211,17 @@ void IracemaLineSeriesView::setHasScales(bool newHasScales)
     emit hasScalesChanged();
 }
 
+
+qreal IracemaLineSeriesView::truncate(qreal value, int numberOfDigits) const
+{
+    double truncValue = 0;
+    numberOfDigits = (int) std::pow(10, numberOfDigits);
+
+    truncValue = int(value * numberOfDigits);
+    return truncValue / numberOfDigits;
+}
+
+
 void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
 {
     qreal x, y, width, height;
@@ -242,9 +253,24 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
         _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
         drawedGridLines++;
 
-        if (_hasScales)
-            _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, currentY - 10, QString::number((int)labelValue), QTextOption(Qt::AlignRight));
+        if (_hasScales){
+            int numberOfDigits = 2;
+            qreal truncValue = 0;
+            // Finds the number of digits where they became equal
+            while(truncate(labelValue, numberOfDigits) != truncate(labelValue - labelValueInterval, numberOfDigits)){
+                if(numberOfDigits <= 0) break;
+                --numberOfDigits;
+            }
 
+            // Finds the number of digits where they became different
+            while(truncate(labelValue, numberOfDigits) == truncate(labelValue - labelValueInterval, numberOfDigits)){
+                if(numberOfDigits >= 3) break;
+                ++numberOfDigits;
+            }
+
+            truncValue = truncate(labelValue, numberOfDigits);
+            _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, currentY - 10, QString::number(truncValue), QTextOption(Qt::AlignRight));
+        }
         currentY += gridHeigth;
         labelValue -= labelValueInterval;
     }
@@ -286,8 +312,23 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
         _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
         drawedGridLines++;
 
-        if (_hasScales)
-            _drawScaleLabel(mainNode, currentX - 25, (_hasScales? y + height + _verticalScaleHeigth * 0.15 : y + height), QString::number((int)labelValue), QTextOption(Qt::AlignHCenter));
+        if (_hasScales){
+            int numberOfDigits = 2;
+            qreal truncValue = 0;
+            // Finds the number of digits where they became equal
+            while(truncate(labelValue, numberOfDigits) != truncate(labelValue - labelValueInterval, numberOfDigits)){
+                if(numberOfDigits <= 0) break;
+                --numberOfDigits;
+            }
+
+            // Finds the number of digits where they became different
+            while(truncate(labelValue, numberOfDigits) == truncate(labelValue - labelValueInterval, numberOfDigits)){
+                if(numberOfDigits >= 3) break;
+                ++numberOfDigits;
+            }
+            truncValue = truncate(labelValue, numberOfDigits);
+            _drawScaleLabel(mainNode, currentX - 25, (_hasScales? y + height + _verticalScaleHeigth * 0.15 : y + height), QString::number(truncValue), QTextOption(Qt::AlignHCenter));
+        }
 
         currentX += gridWidth;
         labelValue += labelValueInterval;
@@ -304,7 +345,6 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
 void IracemaLineSeriesView::_drawGrid(QSGNode *mainNode)
 {
     if (_gridSize.width() <= 0 || _gridSize.height() <= 0) return;
-
     _drawGridHorizontal(mainNode);
     _drawGridVertical(mainNode);
 }
