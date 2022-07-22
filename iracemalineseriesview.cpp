@@ -565,6 +565,8 @@ void IracemaLineSeriesView::clearData()
 void IracemaLineSeriesView::clearLine(quint32 lineIndex)
 {
     _lines[lineIndex]->clearData();
+
+    _redrawGrid = true;
 }
 
 const QColor &IracemaLineSeriesView::gridColor() const
