@@ -211,7 +211,6 @@ void IracemaLineSeriesView::setHasScales(bool newHasScales)
     emit hasScalesChanged();
 }
 
-
 qreal IracemaLineSeriesView::truncate(qreal value, int numberOfDigits) const
 {
     double truncValue = 0;
@@ -220,7 +219,6 @@ qreal IracemaLineSeriesView::truncate(qreal value, int numberOfDigits) const
     truncValue = int(value * numberOfDigits);
     return truncValue / numberOfDigits;
 }
-
 
 void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
 {
@@ -359,7 +357,7 @@ void IracemaLineSeriesView::_drawScaleLabel(QSGNode *mainNode, qreal x, qreal y,
     QFont labelFont;
     QPen pen;
     labelFont.setPixelSize(30);
-    pen.setColor(Qt::white);
+    pen.setColor(_scaleColor);
     painter.setFont(labelFont);
     painter.setPen(pen);
     painter.drawText(rectangle, label, textOption);
@@ -581,6 +579,19 @@ void IracemaLineSeriesView::setGridColor(const QColor &newGridColor)
     _gridColor = newGridColor;
     _gridMaterial->setColor(_gridColor);
     emit gridColorChanged();
+}
+
+const QColor &IracemaLineSeriesView::scaleColor() const
+{
+    return _scaleColor;
+}
+
+void IracemaLineSeriesView::setScaleColor(const QColor &newScaleColor)
+{
+    if (_scaleColor == newScaleColor)
+        return;
+    _scaleColor = newScaleColor;
+    emit scaleColorChanged();
 }
 
 void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)

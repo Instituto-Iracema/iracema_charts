@@ -42,10 +42,12 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(qreal horizontalScaleWidth READ HorizontalScaleWidth WRITE setHorizontalScaleWidth NOTIFY HorizontalScaleWidthChanged)
     Q_PROPERTY(qreal verticalScaleHeigth READ verticalScaleHeigth WRITE setVerticalScaleHeigth NOTIFY verticalScaleHeigthChanged)
     Q_PROPERTY(qreal plotAreaRigthPadding READ plotAreaRigthPadding WRITE setPlotAreaRigthPadding NOTIFY plotAreaRigthPaddingChanged)
+    Q_PROPERTY(QColor scaleColor READ scaleColor WRITE setScaleColor NOTIFY scaleColorChanged)
     QML_NAMED_ELEMENT(IracemaChart)
 
 private:
     // QProperties
+    QColor _scaleColor = Qt::white;
 
     QColor _backgroundColor = Qt::white;
     /**
@@ -174,6 +176,9 @@ public:
     qreal plotAreaRigthPadding() const;
     void setPlotAreaRigthPadding(qreal newPlotAreaRigthPadding);
 
+    const QColor &scaleColor() const;
+    void setScaleColor(const QColor &newScaleColor);
+
     void setReDrawGrid(bool newReDrawGrid);
 
 signals:
@@ -195,6 +200,7 @@ signals:
     void plotAreaRigthPaddingChanged();
     void verticalScaleLabelsChanged();
     void horizontalScaleLabelsChanged();
+    void scaleColorChanged();
 
 private slots:
     void onGridSizeChanged();
