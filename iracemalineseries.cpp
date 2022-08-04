@@ -102,8 +102,8 @@ IracemaLineSeries::IracemaLineSeries(QQuickItem *parent) : QQuickItem(parent)
 
 IracemaLineSeries::~IracemaLineSeries()
 {
-    _graphPointLabelsBuffer.clear();
     _graphPointLabels.clear();
+    _graphPointLabelsBuffer.clear();
 }
 
 void IracemaLineSeries::addData(QVector<QPointF> data)
@@ -157,6 +157,8 @@ void IracemaLineSeries::clearData()
 {
     _data.clear();
     _dataBuffer.clear();
+    _graphPointLabels.clear();
+    _graphPointLabelsBuffer.clear();
 }
 
 void IracemaLineSeries::appendGraphPointLabels(QPointF position, QString text)
