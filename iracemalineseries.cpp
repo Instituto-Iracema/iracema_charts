@@ -145,7 +145,7 @@ QLineF IracemaLineSeries::at(int index)
 
 QPointF IracemaLineSeries::pointAt(int index)
 {
-    return _data.at(index).p2();
+    return index < _data.length() ? _data.at(index).p2() : _dataBuffer.at(index - _data.length()).p2();
 }
 
 int IracemaLineSeries::count()
