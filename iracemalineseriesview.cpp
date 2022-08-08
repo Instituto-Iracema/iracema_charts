@@ -211,6 +211,19 @@ void IracemaLineSeriesView::setHasScales(bool newHasScales)
     emit hasScalesChanged();
 }
 
+bool IracemaLineSeriesView::removeGridHorizontal() const
+{
+    return _removeGridHorizontal;
+}
+
+void IracemaLineSeriesView::setRemoveGridHorizontal(bool newRemoveGridHorizontal)
+{
+    if (_removeGridHorizontal == newRemoveGridHorizontal)
+        return;
+    _removeGridHorizontal = newRemoveGridHorizontal;
+    emit removeGridHorizontalChanged();
+}
+
 qreal IracemaLineSeriesView::truncate(qreal value, int numberOfDigits) const
 {
     double truncValue = 0;
@@ -218,6 +231,25 @@ qreal IracemaLineSeriesView::truncate(qreal value, int numberOfDigits) const
 
     truncValue = int(value * numberOfDigits);
     return truncValue / numberOfDigits;
+}
+
+void IracemaLineSeriesView::_drawTopAndBottom(QSGNode *mainNode)
+{
+    qreal x, y, width, height;
+    QRectF plotArea = _calculatePlotArea(x, y, width, height);
+
+    QLineF lineTop(x, y, x+width, y);
+    _drawOneLine(mainNode, lineTop, _gridLineWidth, _gridMaterial);
+
+    QLineF lineBottom(x, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height), x+width, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height));
+    _drawOneLine(mainNode, lineBottom, _gridLineWidth, _gridMaterial);
+
+    if(_hasScales) {
+        for (auto label: qAsConst(_verticalScaleLabels)) {
+            qreal newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
+            _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, newY - 10, label->scaleText(), QTextOption(Qt::AlignRight));
+        }
+    }
 }
 
 void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
@@ -231,7 +263,7 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
     qreal labelValueInterval;
     // used to solve problems of rouding labelValueInterval by odd tickCount
     int drawedGridLines = 0;
-    const int GRID_LINES_TO_DRAW = (_yTickCount? _yTickCount : (height / gridHeigth)) + 1;
+    const int GRID_LINES_TO_DRAW = (_yTickCount ? _yTickCount : (height / gridHeigth)) + 1;
 
     if (_yTickCount) {
         gridHeigth = height / _yTickCount;
@@ -306,7 +338,7 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
             labelValue = _xScaleTop;
         }
 
-        QLineF line(currentX, y, currentX, (_hasScales? y + height + _verticalScaleHeigth * 0.1 : y+height));
+        QLineF line(currentX, y, currentX, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height));
         _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
         drawedGridLines++;
 
@@ -343,7 +375,12 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
 void IracemaLineSeriesView::_drawGrid(QSGNode *mainNode)
 {
     if (_gridSize.width() <= 0 || _gridSize.height() <= 0) return;
-    _drawGridHorizontal(mainNode);
+
+    if(_removeGridHorizontal)
+        _drawTopAndBottom(mainNode);
+    else
+        _drawGridHorizontal(mainNode);
+
     _drawGridVertical(mainNode);
 }
 

@@ -43,6 +43,7 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(qreal verticalScaleHeigth READ verticalScaleHeigth WRITE setVerticalScaleHeigth NOTIFY verticalScaleHeigthChanged)
     Q_PROPERTY(qreal plotAreaRigthPadding READ plotAreaRigthPadding WRITE setPlotAreaRigthPadding NOTIFY plotAreaRigthPaddingChanged)
     Q_PROPERTY(QColor scaleColor READ scaleColor WRITE setScaleColor NOTIFY scaleColorChanged)
+    Q_PROPERTY(bool removeGridHorizontal READ removeGridHorizontal WRITE setRemoveGridHorizontal NOTIFY removeGridHorizontalChanged)
     QML_NAMED_ELEMENT(IracemaChart)
 
 private:
@@ -95,6 +96,8 @@ private:
 
     bool _hasScales = false;
 
+    bool _removeGridHorizontal = false;
+
     qreal _xTickCount = 0;
     qreal _yTickCount = 0;
 
@@ -104,6 +107,7 @@ private:
 
     void _setRedrawAll();
     qreal truncate(qreal value, int numberOfDigits) const;
+    void _drawTopAndBottom(QSGNode *mainNode);
     void _drawGridHorizontal(QSGNode *mainNode);
     void _drawGridVertical(QSGNode *mainNode);
     void _drawGrid(QSGNode *mainNode);
@@ -161,6 +165,9 @@ public:
     bool hasScales() const;
     void setHasScales(bool newHasScales);
 
+    bool removeGridHorizontal() const;
+    void setRemoveGridHorizontal(bool newRemoveGridHorizontal);
+
     qreal xTickCount() const;
     void setXTickCount(qreal newXTickCount);
 
@@ -201,6 +208,7 @@ signals:
     void verticalScaleLabelsChanged();
     void horizontalScaleLabelsChanged();
     void scaleColorChanged();
+    void removeGridHorizontalChanged();
 
 private slots:
     void onGridSizeChanged();
