@@ -114,6 +114,12 @@ QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
                                                nullptr, nullptr, nullptr);
 }
 
+QQmlListProperty<IracemaScaleLine> IracemaLineSeriesView::verticalScaleLines()
+{
+    return QQmlListProperty<IracemaScaleLine>(this, nullptr, &IracemaLineSeriesView::appendVerticalScaleLine,
+                                               nullptr, nullptr, nullptr);
+}
+
 QQmlListProperty<IracemaScaleLabel> IracemaLineSeriesView::verticalScaleLabels()
 {
     return QQmlListProperty<IracemaScaleLabel>(this, nullptr, &IracemaLineSeriesView::appendVerticalScaleLabel,
@@ -244,11 +250,15 @@ void IracemaLineSeriesView::_drawTopAndBottom(QSGNode *mainNode)
     QLineF lineBottom(x, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height), x+width, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height));
     _drawOneLine(mainNode, lineBottom, _gridLineWidth, _gridMaterial);
 
-    if(_hasScales) {
-        for (auto label: qAsConst(_verticalScaleLabels)) {
-            qreal newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
-            _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, newY - 10, label->scaleText(), QTextOption(Qt::AlignRight));
-        }
+    for (auto line: qAsConst(_verticalScaleLines))
+        _drawScaleLine(mainNode, line, true);
+
+    if (!_hasScales)
+        return;
+
+    for (auto label: qAsConst(_verticalScaleLabels)) {
+        qreal newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
+        _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, newY - 10, label->scaleText(), QTextOption(Qt::AlignRight));
     }
 }
 
@@ -304,6 +314,9 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
         currentY += gridHeigth;
         labelValue -= labelValueInterval;
     }
+
+    for (auto line: qAsConst(_verticalScaleLines))
+        _drawScaleLine(mainNode, line, true);
 
     for (auto label: qAsConst(_verticalScaleLabels)) {
         qreal newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
@@ -406,6 +419,48 @@ void IracemaLineSeriesView::_drawScaleLabel(QSGNode *mainNode, qreal x, qreal y,
     childNode->markDirty(QSGNode::DirtyForceUpdate);
     childNode->setTexture(texture);
     mainNode->appendChildNode(childNode);
+}
+
+void IracemaLineSeriesView::_drawScaleLine(QSGNode *mainNode, IracemaScaleLine *line, bool invertY)
+{
+    qreal x, y, width, height;
+    _calculatePlotArea(x, y, width, height);
+
+    qreal initialPointX = _convertValueToNewScale(line->initialPoint().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
+    qreal initialPointY = _convertValueToNewScale(line->initialPoint().y(), line->yScaleBottom(), line->yScaleTop(), 0, height);
+
+    qreal finalPointX = _convertValueToNewScale(line->finalPoint().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
+    qreal finalPointY = _convertValueToNewScale(line->finalPoint().y(), line->yScaleBottom(), line->yScaleTop(), 0, height);
+
+    //Clip values to view boundaries
+    initialPointY = std::max(0.0, std::min(initialPointY, height));
+    finalPointY = std::max(0.0, std::min(finalPointY, height));
+
+    if (invertY) {
+        initialPointY = this->height() - initialPointY - (this->height() - height - y);
+        finalPointY = this->height() - finalPointY - (this->height() - height - y);
+    } else {
+        initialPointY += y;
+        finalPointY += y;
+    }
+
+    _drawDashedLine(mainNode, line->lineMaterial(), line->lineWidth(), QPointF(initialPointX, initialPointY), QPointF(finalPointX, finalPointY), 2);
+}
+
+void IracemaLineSeriesView::_drawDashedLine(QSGNode *mainNode, QSGFlatColorMaterial *lineMaterial, const qreal lineWidth, const QPointF &initialPoint, const QPointF &finalPoint, int percentage)
+{
+    const qreal xDotValue = std::fabs(initialPoint.x() - finalPoint.x()) * percentage / 100.0;
+    const qreal yDotValue = std::fabs(initialPoint.y() - finalPoint.y()) * percentage / 100.0;
+
+    qreal currentX = initialPoint.x();
+    qreal currentY = initialPoint.y();
+
+    for(int i = 0; i < 100 / (percentage * 2); i++) {
+        QLineF newLine(QPointF(currentX, currentY), QPointF(currentX + xDotValue, currentY - yDotValue));
+        _drawOneLine(mainNode, newLine, lineWidth, lineMaterial);
+        currentX += xDotValue * 2;
+        currentY -= yDotValue * 2;
+    }
 }
 
 void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries *lineSeries, bool invertY, bool redrawAllData)
@@ -553,6 +608,16 @@ void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list
     }
 }
 
+void IracemaLineSeriesView::appendVerticalScaleLine(QQmlListProperty<IracemaScaleLine> *list, IracemaScaleLine *label)
+{
+    IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
+
+    if (view) {
+        label->setParentItem(view);
+        view->_verticalScaleLines.append(label);
+    }
+}
+
 void IracemaLineSeriesView::appendHorizontalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label)
 {
     IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
@@ -690,8 +755,9 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
         _redrawGrid = false;
         _redrawPeakLabels = true;
         oldNode->insertChildNodeAfter(_gridLayer,_backgroundLayer);
-    } else
+    } else {
         _drawLines(_gridLayer);
+    }
 
     if(_redrawPeakLabels){
         oldNode->removeChildNode(_peakLabelLayer);
@@ -700,8 +766,9 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
         _drawPeaksLabels(true);
         _redrawPeakLabels = false;
         oldNode->insertChildNodeAfter(_peakLabelLayer,_gridLayer);
-    } else
+    } else {
         _drawPeaksLabels();
+    }
 
     return oldNode;
 }

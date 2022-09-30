@@ -17,7 +17,8 @@ SOURCES += \
         iracemacharts.cpp \
         iracemalineseriesview.cpp \
         iracemapointlabel.cpp \
-        iracemascalelabel.cpp
+        iracemascalelabel.cpp \
+        iracemascaleline.cpp
 
 HEADERS += \
         iracemalineseries.h \
@@ -25,7 +26,8 @@ HEADERS += \
         iracemacharts.h \
         iracemalineseriesview.h \
         iracemapointlabel.h \
-        iracemascalelabel.h
+        iracemascalelabel.h \
+        iracemascaleline.h
 
 DISTFILES = qmldir
 

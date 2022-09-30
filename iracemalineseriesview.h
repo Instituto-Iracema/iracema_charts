@@ -3,6 +3,7 @@
 
 #include "iracemalineseries.h"
 #include "iracemascalelabel.h"
+#include "iracemascaleline.h"
 
 #include <QPainter>
 #include <QQuickItem>
@@ -36,6 +37,7 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(qreal xScaleTop READ xScaleTop WRITE setXScaleTop NOTIFY xScaleTopChanged)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(QQmlListProperty<IracemaLineSeries> lines READ lines NOTIFY linesChanged)
+    Q_PROPERTY(QQmlListProperty<IracemaScaleLine> verticalScaleLines READ verticalScaleLines NOTIFY verticalScaleLinesChanged)
     Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> verticalScaleLabels READ verticalScaleLabels NOTIFY verticalScaleLabelsChanged)
     Q_PROPERTY(QQmlListProperty<IracemaScaleLabel> horizontalScaleLabels READ horizontalScaleLabels NOTIFY horizontalScaleLabelsChanged)
     Q_PROPERTY(bool hasScales READ hasScales WRITE setHasScales NOTIFY hasScalesChanged)
@@ -76,9 +78,11 @@ private:
     unsigned int _resizeTime = 500;
 
     QList<IracemaLineSeries *> _lines;
+    QList<IracemaScaleLine *> _verticalScaleLines;
     QList<IracemaScaleLabel *> _verticalScaleLabels;
     QList<IracemaScaleLabel *> _horizontalScaleLabels;
     QQmlListProperty<IracemaLineSeries> lines();
+    QQmlListProperty<IracemaScaleLine> verticalScaleLines();
     QQmlListProperty<IracemaScaleLabel> verticalScaleLabels();
     QQmlListProperty<IracemaScaleLabel> horizontalScaleLabels();
 
@@ -112,6 +116,8 @@ private:
     void _drawGridVertical(QSGNode *mainNode);
     void _drawGrid(QSGNode *mainNode);
     void _drawScaleLabel(QSGNode *mainNode, qreal x, qreal y, QString label, QTextOption textOption = QTextOption(Qt::AlignCenter));
+    void _drawScaleLine(QSGNode *mainNode, IracemaScaleLine *line, bool invertY);
+    void _drawDashedLine(QSGNode *mainNode, QSGFlatColorMaterial *lineMaterial, const qreal lineWidth, const QPointF &initialPoint, const QPointF &finalPoint, int percentage);
     void _drawOneLine(QSGNode *mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial *lineMaterial);
     void _drawLineSeries(QSGNode *mainNode, IracemaLineSeries *line, bool invertY = true, bool redrawAllData = false);
     void _drawLines(QSGNode *lineSeriesNode, bool redrawAllData = false);
@@ -124,6 +130,7 @@ private:
     qreal _yScaleBottom();
 
     static void appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line);
+    static void appendVerticalScaleLine(QQmlListProperty<IracemaScaleLine> *list, IracemaScaleLine *label);
     static void appendHorizontalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label);
     static void appendVerticalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label);
 
@@ -199,6 +206,7 @@ signals:
     void xScaleTopChanged();
     void backgroundColorChanged();
     void linesChanged();
+    void verticalScaleLinesChanged();
     void hasScalesChanged();
     void xTickCountChanged();
     void yTickCountChanged();
