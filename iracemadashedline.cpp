@@ -1,6 +1,6 @@
-#include "iracemascaleline.h"
+#include "iracemadashedline.h"
 
-IracemaScaleLine::IracemaScaleLine() :
+IracemaDashedLine::IracemaDashedLine() :
 _initialPoint(QPointF(0, 0)),
 _finalPoint(QPointF(0, 0)),
 _lineWidth(1),

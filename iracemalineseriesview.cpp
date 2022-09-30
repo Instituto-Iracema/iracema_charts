@@ -114,9 +114,9 @@ QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
                                                nullptr, nullptr, nullptr);
 }
 
-QQmlListProperty<IracemaScaleLine> IracemaLineSeriesView::verticalScaleLines()
+QQmlListProperty<IracemaDashedLine> IracemaLineSeriesView::dashedLines()
 {
-    return QQmlListProperty<IracemaScaleLine>(this, nullptr, &IracemaLineSeriesView::appendVerticalScaleLine,
+    return QQmlListProperty<IracemaDashedLine>(this, nullptr, &IracemaLineSeriesView::appendDashedLine,
                                                nullptr, nullptr, nullptr);
 }
 
@@ -250,9 +250,6 @@ void IracemaLineSeriesView::_drawTopAndBottom(QSGNode *mainNode)
     QLineF lineBottom(x, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height), x+width, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height));
     _drawOneLine(mainNode, lineBottom, _gridLineWidth, _gridMaterial);
 
-    for (auto line: qAsConst(_verticalScaleLines))
-        _drawScaleLine(mainNode, line, true);
-
     if (!_hasScales)
         return;
 
@@ -314,9 +311,6 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
         currentY += gridHeigth;
         labelValue -= labelValueInterval;
     }
-
-    for (auto line: qAsConst(_verticalScaleLines))
-        _drawScaleLine(mainNode, line, true);
 
     for (auto label: qAsConst(_verticalScaleLabels)) {
         qreal newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
@@ -395,6 +389,9 @@ void IracemaLineSeriesView::_drawGrid(QSGNode *mainNode)
         _drawGridHorizontal(mainNode);
 
     _drawGridVertical(mainNode);
+
+    for (auto line: qAsConst(_dashedLines))
+        _convertAndDrawDashedLine(mainNode, line, true);
 }
 
 void IracemaLineSeriesView::_drawScaleLabel(QSGNode *mainNode, qreal x, qreal y, QString label, QTextOption textOption)
@@ -421,7 +418,7 @@ void IracemaLineSeriesView::_drawScaleLabel(QSGNode *mainNode, qreal x, qreal y,
     mainNode->appendChildNode(childNode);
 }
 
-void IracemaLineSeriesView::_drawScaleLine(QSGNode *mainNode, IracemaScaleLine *line, bool invertY)
+void IracemaLineSeriesView::_convertAndDrawDashedLine(QSGNode *mainNode, IracemaDashedLine *line, bool invertY)
 {
     qreal x, y, width, height;
     _calculatePlotArea(x, y, width, height);
@@ -608,13 +605,13 @@ void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list
     }
 }
 
-void IracemaLineSeriesView::appendVerticalScaleLine(QQmlListProperty<IracemaScaleLine> *list, IracemaScaleLine *label)
+void IracemaLineSeriesView::appendDashedLine(QQmlListProperty<IracemaDashedLine> *list, IracemaDashedLine *label)
 {
     IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
 
     if (view) {
         label->setParentItem(view);
-        view->_verticalScaleLines.append(label);
+        view->_dashedLines.append(label);
     }
 }
 

@@ -1,5 +1,5 @@
-#ifndef IRACEMASCALELINE_H
-#define IRACEMASCALELINE_H
+#ifndef IRACEMADASHEDLINE_H
+#define IRACEMADASHEDLINE_H
 
 #include <QSGFlatColorMaterial>
 #include <QQuickItem>
@@ -7,7 +7,7 @@
 #include <QColor>
 
 
-class IracemaScaleLine : public QQuickItem
+class IracemaDashedLine : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(QPointF initialPoint READ initialPoint WRITE setInitialPoint NOTIFY initialPointChanged)
@@ -16,7 +16,7 @@ class IracemaScaleLine : public QQuickItem
     Q_PROPERTY(qreal yScaleTop READ yScaleTop WRITE setYScaleTop NOTIFY yScaleTopChanged)
     Q_PROPERTY(qreal yScaleBottom READ yScaleBottom WRITE setYScaleBottom NOTIFY yScaleBottomChanged)
     Q_PROPERTY(QColor lineColor READ lineColor WRITE setLineColor NOTIFY lineColorChanged)
-    QML_NAMED_ELEMENT(IracemaScaleLine)
+    QML_NAMED_ELEMENT(IracemaDashedLine)
 
 private:
     QPointF _initialPoint;
@@ -29,7 +29,7 @@ private:
     QSGFlatColorMaterial* _lineMaterial;
 
 public:
-    IracemaScaleLine();
+    IracemaDashedLine();
 
     QPointF initialPoint() const {
         return _initialPoint;
@@ -117,6 +117,6 @@ signals:
     void lineColorChanged();
 };
 
-#endif // IRACEMASCALELINE_H
+#endif // IRACEMADASHEDLINE_H
 
 
