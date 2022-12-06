@@ -10,17 +10,35 @@ class IracemaScaleLabel : public QQuickItem
     Q_PROPERTY(QString scaleText READ scaleText WRITE setScaleText NOTIFY scaleTextChanged)
     QML_NAMED_ELEMENT(IracemaScaleLabel)
 
-private:
-    int _scalePoint= 0;
-    QString _scaleText = "";
-
 public:
     IracemaScaleLabel();
-    int scalePoint() const;
-    void setScalePoint(int newScalePoint);
 
-    const QString &scaleText();
-    void setScaleText(const QString &newScaleText);
+    int scalePoint() const {
+        return _scalePoint;
+    }
+    void setScalePoint(int newScalePoint) {
+        if(_scalePoint == newScalePoint)
+            return;
+        _scalePoint = newScalePoint;
+        emit scalePointChanged();
+    }
+
+    const QString& scaleText() {
+        if(_scaleText.isEmpty())
+            _scaleText = QString::number(_scalePoint);
+
+        return _scaleText;
+    }
+    void setScaleText(const QString &newScaleText) {
+        if(_scaleText == newScaleText)
+            return;
+        _scaleText = newScaleText;
+        emit scaleTextChanged();
+    }
+
+private:
+    int _scalePoint;
+    QString _scaleText;
 
 signals:
     void scalePointChanged();
