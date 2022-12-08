@@ -6,13 +6,5 @@ _yScaleTop(100),
 _yScaleBottom(),
 _initialPoint(),
 _finalPoint(),
-_lineColor(Qt::black),
-_lineMaterial(new QSGFlatColorMaterial())
-{
-    _lineMaterial->setColor(_lineColor);
-}
-
-// IracemaDashedLine::~IracemaDashedLine() {
-//     qDebug() << "oi";
-//     delete _lineMaterial;
-// }
+_lineColor(Qt::black)
+{}

@@ -9,19 +9,13 @@ _data(),
 _dataBuffer(),
 _graphPointLabels(),
 _graphPointLabelsBuffer(),
-_lineColor(Qt::black),
-_lineMaterial(new QSGFlatColorMaterial())
-{
-    _lineMaterial->setColor(_lineColor);
-}
+_lineColor(Qt::black)
+{}
 
-// IracemaLineSeries::~IracemaLineSeries()
-// {
-//     qDebug() << "oi2";
-//     // _deleteGraphPoint();
-//     // delete _lineMaterial;
-//     qDebug() << "oi3";
-// }
+IracemaLineSeries::~IracemaLineSeries()
+{
+    _deleteGraphPoint();
+}
 
 QLineF IracemaLineSeries::at(int index)
 {
@@ -86,9 +80,7 @@ void IracemaLineSeries::clearData()
 {
     _data.clear();
     _dataBuffer.clear();
-    _graphPointLabels.clear();
-    _graphPointLabelsBuffer.clear();
-    // _deleteGraphPoint();
+    _deleteGraphPoint();
 }
 
 QQmlListProperty<IracemaPointLabel> IracemaLineSeries::graphPointLabels()
@@ -124,14 +116,12 @@ void IracemaLineSeries::_addPointToBuffer(const QPointF& point)
     _dataBuffer.append(line);
 }
 
-// void IracemaLineSeries::_deleteGraphPoint() {
-//     qDebug() << "oi4";
-//     for(auto &point : _graphPointLabels)
-//         delete point;
-//     _graphPointLabels.clear();
+void IracemaLineSeries::_deleteGraphPoint() {
+    for(auto &point : _graphPointLabels)
+        delete point;
+    _graphPointLabels.clear();
 
-//     for(auto &pointBuffer : _graphPointLabelsBuffer)
-//         delete pointBuffer;
-//     _graphPointLabelsBuffer.clear();
-//     qDebug() << "oi5";
-// }
+    for(auto &pointBuffer : _graphPointLabelsBuffer)
+        delete pointBuffer;
+    _graphPointLabelsBuffer.clear();
+}

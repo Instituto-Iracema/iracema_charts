@@ -20,7 +20,7 @@ class IracemaLineSeries : public QQuickItem
 
 public:
     explicit IracemaLineSeries(QQuickItem* parent = nullptr);
-    // ~IracemaLineSeries();
+    ~IracemaLineSeries();
 
     qreal lineWidth() const {
         return _lineWidth;
@@ -66,19 +66,14 @@ public:
         return _graphPointLabelsBuffer;
     }
 
-    const QColor &lineColor() const {
+    const QColor lineColor() const {
         return _lineColor;
     }
     void setLineColor(const QColor &newLineColor) {
         if(_lineColor == newLineColor)
             return;
         _lineColor = newLineColor;
-        _lineMaterial->setColor(_lineColor);
         emit lineColorChanged();
-    }
-
-    QSGFlatColorMaterial* lineMaterial() const {
-        return _lineMaterial;
     }
 
     Q_INVOKABLE QLineF at(int index);
@@ -111,12 +106,11 @@ private:
     QList<IracemaPointLabel*> _graphPointLabelsBuffer;
 
     QColor _lineColor;
-    QSGFlatColorMaterial* _lineMaterial;
 
     static void _appendGraphPointLabels(QQmlListProperty<IracemaPointLabel>*, IracemaPointLabel*);
 
     void _addPointToBuffer(const QPointF& point);
-    // void _deleteGraphPoint();
+    void _deleteGraphPoint();
 
 signals:
     void lineWidthChanged();

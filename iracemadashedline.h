@@ -20,7 +20,6 @@ class IracemaDashedLine : public QQuickItem
 
 public:
     IracemaDashedLine();
-    // ~IracemaDashedLine();
 
     qreal lineWidth() const {
         return _lineWidth;
@@ -85,13 +84,7 @@ public:
             return;
 
         _lineColor = newLineColor;
-        _lineMaterial->setColor(_lineColor);
         emit lineColorChanged();
-    }
-
-    QSGFlatColorMaterial* lineMaterial() const
-    {
-        return _lineMaterial;
     }
 
 private:
@@ -103,7 +96,6 @@ private:
     QPointF _finalPoint;
 
     QColor _lineColor;
-    QSGFlatColorMaterial* _lineMaterial;
 
 signals:
     void initialPointChanged();

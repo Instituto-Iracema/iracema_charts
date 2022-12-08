@@ -58,9 +58,9 @@ class IracemaLineSeriesView : public QQuickItem
 
 public:
     explicit IracemaLineSeriesView(QQuickItem* parent = nullptr);
-    // ~IracemaLineSeriesView();
+    ~IracemaLineSeriesView();
 
-    // Properties getters and setters
+    // Properties Getters and Setters
 
     bool hasScales() const {
         return _hasScales;
@@ -174,18 +174,17 @@ public:
         emit gridLineWidthChanged();
     }
 
-    const QColor &gridColor() const {
+    const QColor gridColor() const {
         return _gridColor;
     }
     void setGridColor(const QColor &newGridColor) {
         if(_gridColor == newGridColor)
             return;
         _gridColor = newGridColor;
-        _gridMaterial->setColor(_gridColor);
         emit gridColorChanged();
     }
 
-    const QSizeF &gridSize() const {
+    const QSizeF gridSize() const {
         return _gridSize;
     }
     void setGridSize(const QSizeF &newGridSize) {
@@ -195,7 +194,7 @@ public:
         emit gridSizeChanged();
     }
 
-    const QSizeF &gridOffset() const {
+    const QSizeF gridOffset() const {
         return _gridOffset;
     }
     void setGridOffset(const QSizeF &newGridOffset) {
@@ -205,7 +204,7 @@ public:
         emit gridOffsetChanged();
     }
 
-    const QColor &scaleColor() const {
+    const QColor scaleColor() const {
         return _scaleColor;
     }
     void setScaleColor(const QColor &newScaleColor) {
@@ -215,7 +214,7 @@ public:
         emit scaleColorChanged();   
     }
 
-    const QColor &backgroundColor() const {
+    const QColor backgroundColor() const {
         return _backgroundColor;
     }
     void setBackgroundColor(const QColor &newBackgroundColor) {
@@ -266,6 +265,7 @@ private:
     QList<IracemaScaleLabel*> _verticalScaleLabels;
     QList<IracemaScaleLabel*> _horizontalScaleLabels;
 
+    // Other Members
     bool _isProcessingImage = false;
 
     bool _redrawGrid = true;
@@ -273,8 +273,6 @@ private:
     bool _redrawPeakLabels = true;
 
     int _updateTimerId = -1;
-
-    QSGFlatColorMaterial* _gridMaterial;
 
     static void _appendLine(QQmlListProperty<IracemaLineSeries>* list, IracemaLineSeries* line);
     static void _appendDashedLine(QQmlListProperty<IracemaDashedLine>* list, IracemaDashedLine* label);
@@ -294,7 +292,7 @@ private:
     void _drawPeaksLabels(bool redrawAll = false);
 
     void _convertAndDrawDashedLine(QSGNode* mainNode, IracemaDashedLine* line, bool invertY);
-    void _drawDashedLine(QSGNode* mainNode, QSGFlatColorMaterial* lineMaterial, const qreal lineWidth, const QPointF &initialPoint, const QPointF &finalPoint, int percentage);
+    void _drawDashedLine(QSGNode* mainNode, const QColor& lineColor, const qreal lineWidth, const QPointF &initialPoint, const QPointF &finalPoint, int percentage);
 
     void _drawScaleLabel(QSGNode* mainNode, qreal x, qreal y, QString label, QTextOption textOption = QTextOption(Qt::AlignCenter));
     void _drawOneLine(QSGNode* mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial* lineMaterial);
@@ -307,19 +305,19 @@ private:
 
     qreal _truncate(qreal value, int numberOfDigits) const;
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
-    // void _deleteLists();
+    void _deleteLists();
 
 private slots:
     void _onGridSizeChanged();
 
 protected:
     // QQuickItem interface
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
     // QObject interface
-    void timerEvent(QTimerEvent* event);
+    void timerEvent(QTimerEvent* event) override;
 
-    QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*);
+    QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) override;
 
     // Nodes pointers
     QSGNode* _backgroundLayer;
