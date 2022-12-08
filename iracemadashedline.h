@@ -18,46 +18,13 @@ class IracemaDashedLine : public QQuickItem
     Q_PROPERTY(QColor lineColor READ lineColor WRITE setLineColor NOTIFY lineColorChanged)
     QML_NAMED_ELEMENT(IracemaDashedLine)
 
-private:
-    QPointF _initialPoint;
-    QPointF _finalPoint;
-    qreal _lineWidth;
-    qreal _yScaleTop;
-    qreal _yScaleBottom;
-
-    QColor _lineColor;
-    QSGFlatColorMaterial* _lineMaterial;
-
 public:
     IracemaDashedLine();
-
-    QPointF initialPoint() const {
-        return _initialPoint;
-    }
-    void setInitialPoint(QPointF newPoint) {
-        if(_initialPoint == newPoint)
-            return;
-
-        _initialPoint = newPoint;
-        emit initialPointChanged();
-    }
-
-    QPointF finalPoint() const {
-        return _finalPoint;
-    }
-
-    void setFinalPoint(QPointF newPoint) {
-        if(_finalPoint == newPoint)
-            return;
-
-        _finalPoint = newPoint;
-        emit finalPointChanged();
-    }
+    // ~IracemaDashedLine();
 
     qreal lineWidth() const {
         return _lineWidth;
     }
-
     void setLineWidth(qreal newLineWidth) {
         if(qFuzzyCompare(_lineWidth, newLineWidth))
             return;
@@ -69,7 +36,6 @@ public:
     qreal yScaleTop() const {
         return _yScaleTop;
     }
-
     void setYScaleTop(qreal newYScaleTop) {
         if (qFuzzyCompare(_yScaleTop, newYScaleTop))
             return;
@@ -81,7 +47,6 @@ public:
     qreal yScaleBottom() const {
         return _yScaleBottom;
     }
-
     void setYScaleBottom(qreal newYScaleBottom) {
         if (qFuzzyCompare(_yScaleBottom, newYScaleBottom))
             return;
@@ -90,10 +55,31 @@ public:
         emit yScaleBottomChanged();
     }
 
+    QPointF initialPoint() const {
+        return _initialPoint;
+    }
+    void setInitialPoint(const QPointF& newPoint) {
+        if(_initialPoint == newPoint)
+            return;
+
+        _initialPoint = newPoint;
+        emit initialPointChanged();
+    }
+
+    QPointF finalPoint() const {
+        return _finalPoint;
+    }
+    void setFinalPoint(const QPointF& newPoint) {
+        if(_finalPoint == newPoint)
+            return;
+
+        _finalPoint = newPoint;
+        emit finalPointChanged();
+    }
+
     const QColor lineColor() const {
         return _lineColor;
     }
-
     void setLineColor(const QColor &newLineColor) {
         if (_lineColor == newLineColor)
             return;
@@ -103,10 +89,21 @@ public:
         emit lineColorChanged();
     }
 
-    QSGFlatColorMaterial *lineMaterial() const
+    QSGFlatColorMaterial* lineMaterial() const
     {
         return _lineMaterial;
     }
+
+private:
+    qreal _lineWidth;
+    qreal _yScaleTop;
+    qreal _yScaleBottom;
+
+    QPointF _initialPoint;
+    QPointF _finalPoint;
+
+    QColor _lineColor;
+    QSGFlatColorMaterial* _lineMaterial;
 
 signals:
     void initialPointChanged();

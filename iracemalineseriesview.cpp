@@ -1,268 +1,169 @@
 #include "iracemalineseriesview.h"
+#include <QDebug>
 
-IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent) : QQuickItem(parent)
+IracemaLineSeriesView::IracemaLineSeriesView(QQuickItem *parent) :
+QQuickItem(parent),
+_gridMaterial(new QSGFlatColorMaterial())
 {
     setFlag(ItemHasContents, true);
 
-    _gridMaterial = new QSGFlatColorMaterial();
     _gridMaterial->setColor(_gridColor);
 
-    connect(this, &IracemaLineSeriesView::gridSizeChanged, &IracemaLineSeriesView::onGridSizeChanged);
+    connect(this, &IracemaLineSeriesView::gridSizeChanged, &IracemaLineSeriesView::_onGridSizeChanged);
 }
 
-const QSizeF &IracemaLineSeriesView::gridSize() const
+// IracemaLineSeriesView::~IracemaLineSeriesView()
+// {
+//     qDebug() << "sera";
+//     delete _gridMaterial;
+//     delete _backgroundLayer;
+//     delete _gridLayer;
+//     delete _peakLabelLayer;
+//     _deleteLists();
+//     qDebug() << "sera?";
+// }
+
+void IracemaLineSeriesView::addPoint(quint32 lineIndex, const QPointF& point)
 {
-    return _gridSize;
+    _lines[lineIndex]->addPoint(point);
 }
 
-void IracemaLineSeriesView::setGridSize(const QSizeF &newGridSize)
+void IracemaLineSeriesView::addPoint(quint32 lineIndex, qreal x, qreal y)
 {
-    if (_gridSize == newGridSize)
-        return;
-    _gridSize = newGridSize;
-    emit gridSizeChanged();
+    _lines[lineIndex]->addPoint(QPointF(x, y));
 }
 
-const QSizeF &IracemaLineSeriesView::gridOffset() const
+void IracemaLineSeriesView::addPoints(quint32 lineIndex, const QList<QPointF>& points)
 {
-    return _gridOffset;
+    for(const auto& point : points)
+        _lines[lineIndex]->addPoint(point);
 }
 
-void IracemaLineSeriesView::setGridOffset(const QSizeF &newGridOffset)
+void IracemaLineSeriesView::clearData()
 {
-    if (_gridOffset == newGridOffset)
-        return;
-    _gridOffset = newGridOffset;
-    emit gridOffsetChanged();
+    for(auto& line : qAsConst(_lines))
+        line->clearData();
+
+    _redrawGrid = true;
 }
 
-unsigned int IracemaLineSeriesView::updateTime() const
+void IracemaLineSeriesView::clearLine(quint32 lineIndex)
 {
-    return _updateTime;
-}
+    _lines[lineIndex]->clearData();
 
-void IracemaLineSeriesView::setUpdateTime(unsigned int newUpdateTime)
-{
-    if (_updateTime == newUpdateTime)
-        return;
-    _updateTime = newUpdateTime;
-    emit updateTimeChanged();
-}
-
-qreal IracemaLineSeriesView::gridLineWidth() const
-{
-    return _gridLineWidth;
-}
-
-void IracemaLineSeriesView::setGridLineWidth(qreal newGridLineWidth)
-{
-    if (qFuzzyCompare(_gridLineWidth, newGridLineWidth))
-        return;
-    _gridLineWidth = newGridLineWidth;
-    emit gridLineWidthChanged();
-}
-
-qreal IracemaLineSeriesView::xScaleBottom() const
-{
-    return _xScaleBottom;
-}
-
-void IracemaLineSeriesView::setXScaleBottom(qreal newXScaleBottom)
-{
-    if (qFuzzyCompare(_xScaleBottom, newXScaleBottom))
-        return;
-    _xScaleBottom = newXScaleBottom;
-    emit xScaleBottomChanged();
-    this->_setRedrawAll();
-}
-
-qreal IracemaLineSeriesView::xScaleTop() const
-{
-    return _xScaleTop;
-}
-
-void IracemaLineSeriesView::setXScaleTop(qreal newXScaleTop)
-{
-    if (qFuzzyCompare(_xScaleTop, newXScaleTop))
-        return;
-    _xScaleTop = newXScaleTop;
-    emit xScaleTopChanged();
-    this->_setRedrawAll();
-}
-
-const QColor &IracemaLineSeriesView::backgroundColor() const
-{
-    return _backgroundColor;
-}
-
-void IracemaLineSeriesView::setBackgroundColor(const QColor &newBackgroundColor)
-{
-    if (_backgroundColor == newBackgroundColor)
-        return;
-    _backgroundColor = newBackgroundColor;
-    emit backgroundColorChanged();
-}
-
-void IracemaLineSeriesView::onGridSizeChanged()
-{
     _redrawGrid = true;
 }
 
 QQmlListProperty<IracemaLineSeries> IracemaLineSeriesView::lines()
 {
-    return QQmlListProperty<IracemaLineSeries>(this, nullptr, &IracemaLineSeriesView::appendLine,
-                                               nullptr, nullptr, nullptr);
+    return QQmlListProperty<IracemaLineSeries>(this, nullptr, &IracemaLineSeriesView::_appendLine,
+                                                nullptr, nullptr, nullptr);
 }
 
 QQmlListProperty<IracemaDashedLine> IracemaLineSeriesView::dashedLines()
 {
-    return QQmlListProperty<IracemaDashedLine>(this, nullptr, &IracemaLineSeriesView::appendDashedLine,
-                                               nullptr, nullptr, nullptr);
+    return QQmlListProperty<IracemaDashedLine>(this, nullptr, &IracemaLineSeriesView::_appendDashedLine,
+                                                nullptr, nullptr, nullptr);
 }
 
 QQmlListProperty<IracemaScaleLabel> IracemaLineSeriesView::verticalScaleLabels()
 {
-    return QQmlListProperty<IracemaScaleLabel>(this, nullptr, &IracemaLineSeriesView::appendVerticalScaleLabel,
-                                               nullptr, nullptr, nullptr);
+    return QQmlListProperty<IracemaScaleLabel>(this, nullptr, &IracemaLineSeriesView::_appendVerticalScaleLabel,
+                                                nullptr, nullptr, nullptr);
 }
 
 QQmlListProperty<IracemaScaleLabel> IracemaLineSeriesView::horizontalScaleLabels()
 {
-    return QQmlListProperty<IracemaScaleLabel>(this, nullptr, &IracemaLineSeriesView::appendHorizontalScaleLabel,
-                                               nullptr, nullptr, nullptr);
+    return QQmlListProperty<IracemaScaleLabel>(this, nullptr, &IracemaLineSeriesView::_appendHorizontalScaleLabel,
+                                                nullptr, nullptr, nullptr);
+}
+
+void IracemaLineSeriesView::_appendLine(QQmlListProperty<IracemaLineSeries>* list, IracemaLineSeries* line)
+{
+    auto view = qobject_cast<IracemaLineSeriesView*>(list->object);
+    if(view) {
+        line->setParentItem(view);
+        view->_lines.append(line);
+        connect(line, &IracemaLineSeries::yScaleTopChanged, view, [view] { view->_setRedrawAll(); });
+        connect(line, &IracemaLineSeries::yScaleBottomChanged, view, [view] { view->_setRedrawAll(); });
+        connect(line, &IracemaLineSeries::graphPointLabelsChanged, view, [view] { view->_redrawPeakLabels = true; });
+    }
+}
+
+void IracemaLineSeriesView::_appendDashedLine(QQmlListProperty<IracemaDashedLine>* list, IracemaDashedLine* label)
+{
+    auto view = qobject_cast<IracemaLineSeriesView*>(list->object);
+    if(view) {
+        label->setParentItem(view);
+        view->_dashedLines.append(label);
+    }
+}
+
+void IracemaLineSeriesView::_appendVerticalScaleLabel(QQmlListProperty<IracemaScaleLabel>* list, IracemaScaleLabel* label)
+{
+    auto view = qobject_cast<IracemaLineSeriesView*>(list->object);
+    if(view) {
+        label->setParentItem(view);
+        view->_verticalScaleLabels.append(label);
+    }
+}
+
+void IracemaLineSeriesView::_appendHorizontalScaleLabel(QQmlListProperty<IracemaScaleLabel>* list, IracemaScaleLabel* label)
+{
+    auto view = qobject_cast<IracemaLineSeriesView*>(list->object);
+    if(view) {
+        label->setParentItem(view);
+        view->_horizontalScaleLabels.append(label);
+    }
 }
 
 void IracemaLineSeriesView::_setRedrawAll()
 {
-    this->_redrawGrid = true;
-    this->_redrawLines = true;
-    this->_redrawPeakLabels = true;
+    _redrawGrid = true;
+    _redrawLines = true;
+    _redrawPeakLabels = true;
 }
 
-qreal IracemaLineSeriesView::plotAreaRigthPadding() const
+void IracemaLineSeriesView::_drawGrid(QSGNode* mainNode)
 {
-    return _plotAreaRigthPadding;
-}
-
-void IracemaLineSeriesView::setPlotAreaRigthPadding(qreal newPlotAreaRigthPadding)
-{
-    if (qFuzzyCompare(_plotAreaRigthPadding, newPlotAreaRigthPadding))
+    if(_gridSize.width() <= 0 || _gridSize.height() <= 0)
         return;
-    _plotAreaRigthPadding = newPlotAreaRigthPadding;
-    emit plotAreaRigthPaddingChanged();
+
+    if(_removeGridHorizontal)
+        _drawTopAndBottom(mainNode);
+    else
+        _drawGridHorizontal(mainNode);
+
+    _drawGridVertical(mainNode);
+
+    for(auto line: qAsConst(_dashedLines))
+        _convertAndDrawDashedLine(mainNode, line, true);
 }
 
-qreal IracemaLineSeriesView::verticalScaleHeigth() const
-{
-    return _verticalScaleHeigth;
-}
-
-void IracemaLineSeriesView::setVerticalScaleHeigth(qreal newVerticalScaleHeigth)
-{
-    if (qFuzzyCompare(_verticalScaleHeigth, newVerticalScaleHeigth))
-        return;
-    _verticalScaleHeigth = newVerticalScaleHeigth;
-    emit verticalScaleHeigthChanged();
-}
-
-qreal IracemaLineSeriesView::HorizontalScaleWidth() const
-{
-    return _horizontalScaleWidth;
-}
-
-void IracemaLineSeriesView::setHorizontalScaleWidth(qreal newHorizontalScaleWidth)
-{
-    if (qFuzzyCompare(_horizontalScaleWidth, newHorizontalScaleWidth))
-        return;
-    _horizontalScaleWidth = newHorizontalScaleWidth;
-    emit HorizontalScaleWidthChanged();
-}
-
-qreal IracemaLineSeriesView::yTickCount() const
-{
-    return _yTickCount;
-}
-
-void IracemaLineSeriesView::setYTickCount(qreal newYTickCount)
-{
-    if (qFuzzyCompare(_yTickCount, newYTickCount))
-        return;
-    _yTickCount = newYTickCount;
-    emit yTickCountChanged();
-}
-
-qreal IracemaLineSeriesView::xTickCount() const
-{
-    return _xTickCount;
-}
-
-void IracemaLineSeriesView::setXTickCount(qreal newXTickCount)
-{
-    if (qFuzzyCompare(_xTickCount, newXTickCount))
-        return;
-    _xTickCount = newXTickCount;
-    emit xTickCountChanged();
-}
-
-bool IracemaLineSeriesView::hasScales() const
-{
-    return _hasScales;
-}
-
-void IracemaLineSeriesView::setHasScales(bool newHasScales)
-{
-    if (_hasScales == newHasScales)
-        return;
-    _hasScales = newHasScales;
-    emit hasScalesChanged();
-}
-
-bool IracemaLineSeriesView::removeGridHorizontal() const
-{
-    return _removeGridHorizontal;
-}
-
-void IracemaLineSeriesView::setRemoveGridHorizontal(bool newRemoveGridHorizontal)
-{
-    if (_removeGridHorizontal == newRemoveGridHorizontal)
-        return;
-    _removeGridHorizontal = newRemoveGridHorizontal;
-    emit removeGridHorizontalChanged();
-}
-
-qreal IracemaLineSeriesView::truncate(qreal value, int numberOfDigits) const
-{
-    double truncValue = 0;
-    numberOfDigits = (int) std::pow(10, numberOfDigits);
-
-    truncValue = int(value * numberOfDigits);
-    return truncValue / numberOfDigits;
-}
-
-void IracemaLineSeriesView::_drawTopAndBottom(QSGNode *mainNode)
+void IracemaLineSeriesView::_drawTopAndBottom(QSGNode* mainNode)
 {
     qreal x, y, width, height;
-    QRectF plotArea = _calculatePlotArea(x, y, width, height);
+    auto plotArea = _calculatePlotArea(x, y, width, height);
 
-    QLineF lineTop(x, y, x+width, y);
+    auto lineTop = QLineF(x, y, x+width, y);
     _drawOneLine(mainNode, lineTop, _gridLineWidth, _gridMaterial);
 
-    QLineF lineBottom(x, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height), x+width, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height));
+    auto lineBottom = QLineF(x, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height), x+width, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height));
     _drawOneLine(mainNode, lineBottom, _gridLineWidth, _gridMaterial);
 
-    if (!_hasScales)
+    if(!_hasScales)
         return;
 
-    for (auto label: qAsConst(_verticalScaleLabels)) {
-        qreal newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
+    for(auto label : qAsConst(_verticalScaleLabels)) {
+        auto newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
         _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, newY - 10, label->scaleText(), QTextOption(Qt::AlignRight));
     }
 }
 
-void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
+void IracemaLineSeriesView::_drawGridHorizontal(QSGNode* mainNode)
 {
     qreal x, y, width, height;
-    QRectF plotArea =  _calculatePlotArea(x, y, width, height);
+    auto plotArea =  _calculatePlotArea(x, y, width, height);
     qreal currentY = y;
     qreal limit = y + height;
     qreal gridHeigth = 0;
@@ -272,7 +173,7 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
     int drawedGridLines = 0;
     const int GRID_LINES_TO_DRAW = (_yTickCount ? _yTickCount : (height / gridHeigth)) + 1;
 
-    if (_yTickCount) {
+    if(_yTickCount) {
         gridHeigth = height / _yTickCount;
         labelValueInterval = labelValue / _yTickCount;
     } else {
@@ -280,45 +181,45 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode *mainNode)
         labelValueInterval = labelValue / (height / gridHeigth);
     }
 
-    while (currentY <= limit || drawedGridLines < GRID_LINES_TO_DRAW) {
+    while(currentY <= limit || drawedGridLines < GRID_LINES_TO_DRAW) {
         if ( currentY > limit) {
             currentY = limit;
             labelValue = _yScaleBottom();
         }
 
-        QLineF line(_horizontalScaleWidth * 0.95, currentY, x+width, currentY);
+        auto line = QLineF(_horizontalScaleWidth * 0.95, currentY, x+width, currentY);
         _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
         drawedGridLines++;
 
-        if (_hasScales){
+        if(_hasScales) {
             int numberOfDigits = 2;
             qreal truncValue = 0;
             // Finds the number of digits where they became equal
-            while(truncate(labelValue, numberOfDigits) != truncate(labelValue - labelValueInterval, numberOfDigits)){
+            while(_truncate(labelValue, numberOfDigits) != _truncate(labelValue - labelValueInterval, numberOfDigits)){
                 if(numberOfDigits <= 0) break;
                 --numberOfDigits;
             }
 
             // Finds the number of digits where they became different
-            while(truncate(labelValue, numberOfDigits) == truncate(labelValue - labelValueInterval, numberOfDigits)){
+            while(_truncate(labelValue, numberOfDigits) == _truncate(labelValue - labelValueInterval, numberOfDigits)){
                 if(numberOfDigits >= 3) break;
                 ++numberOfDigits;
             }
 
-            truncValue = truncate(labelValue, numberOfDigits);
+            truncValue = _truncate(labelValue, numberOfDigits);
             _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, currentY - 10, QString::number(truncValue), QTextOption(Qt::AlignRight));
         }
         currentY += gridHeigth;
         labelValue -= labelValueInterval;
     }
 
-    for (auto label: qAsConst(_verticalScaleLabels)) {
-        qreal newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
+    for(auto label : qAsConst(_verticalScaleLabels)) {
+        auto newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
         _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, newY - 10, label->scaleText(), QTextOption(Qt::AlignRight));
     }
 }
 
-void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
+void IracemaLineSeriesView::_drawGridVertical(QSGNode* mainNode)
 {
     qreal x, y, width, height;
     _calculatePlotArea(x, y, width, height);
@@ -331,7 +232,7 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
     int drawedGridLines = 0;
     const int GRID_LINES_TO_DRAW = (_xTickCount? _xTickCount : (width / gridWidth)) + 1;
 
-    if (_xTickCount) {
+    if(_xTickCount) {
         gridWidth = width / _xTickCount;
         labelValueInterval = _xScaleTop / _xTickCount;
     } else {
@@ -339,31 +240,32 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
         labelValueInterval = _xScaleTop / (width / gridWidth);
     }
 
-    while (currentX <= limit ||  drawedGridLines < GRID_LINES_TO_DRAW) {
-        if (currentX > limit) {
+    while(currentX <= limit ||  drawedGridLines < GRID_LINES_TO_DRAW) {
+        if(currentX > limit) {
             currentX = limit;
             labelValue = _xScaleTop;
         }
 
-        QLineF line(currentX, y, currentX, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height));
+        auto line = QLineF(currentX, y, currentX, (_hasScales ? y + height + _verticalScaleHeigth * 0.1 : y+height));
         _drawOneLine(mainNode, line, _gridLineWidth, _gridMaterial);
         drawedGridLines++;
 
-        if (_hasScales){
+        if(_hasScales) {
             int numberOfDigits = 2;
             qreal truncValue = 0;
             // Finds the number of digits where they became equal
-            while(truncate(labelValue, numberOfDigits) != truncate(labelValue - labelValueInterval, numberOfDigits)){
+            while(_truncate(labelValue, numberOfDigits) != _truncate(labelValue - labelValueInterval, numberOfDigits)){
                 if(numberOfDigits <= 0) break;
                 --numberOfDigits;
             }
 
             // Finds the number of digits where they became different
-            while(truncate(labelValue, numberOfDigits) == truncate(labelValue - labelValueInterval, numberOfDigits)){
+            while(_truncate(labelValue, numberOfDigits) == _truncate(labelValue - labelValueInterval, numberOfDigits)){
                 if(numberOfDigits >= 3) break;
                 ++numberOfDigits;
             }
-            truncValue = truncate(labelValue, numberOfDigits);
+
+            truncValue = _truncate(labelValue, numberOfDigits);
             _drawScaleLabel(mainNode, currentX - 25, (_hasScales? y + height + _verticalScaleHeigth * 0.15 : y + height), QString::number(truncValue), QTextOption(Qt::AlignHCenter));
         }
 
@@ -371,63 +273,100 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode *mainNode)
         labelValue += labelValueInterval;
     }
 
-    for (auto label: qAsConst(_horizontalScaleLabels)) {
-        qreal newX = _convertValueToNewScale(label->scalePoint(), _xScaleBottom, _xScaleTop, x, x+width);
+    for(auto label : qAsConst(_horizontalScaleLabels)) {
+        auto newX = _convertValueToNewScale(label->scalePoint(), _xScaleBottom, _xScaleTop, x, x+width);
         // center label component
         newX -= 25;
         _drawScaleLabel(mainNode, newX , (_hasScales? y + height + _verticalScaleHeigth * 0.15 : y + height), label->scaleText(), QTextOption(Qt::AlignHCenter));
     }
 }
 
-void IracemaLineSeriesView::_drawGrid(QSGNode *mainNode)
+void IracemaLineSeriesView::_drawLines(QSGNode* mainNode, bool redrawAllData)
 {
-    if (_gridSize.width() <= 0 || _gridSize.height() <= 0) return;
-
-    if(_removeGridHorizontal)
-        _drawTopAndBottom(mainNode);
-    else
-        _drawGridHorizontal(mainNode);
-
-    _drawGridVertical(mainNode);
-
-    for (auto line: qAsConst(_dashedLines))
-        _convertAndDrawDashedLine(mainNode, line, true);
+    for(auto lineSeries : qAsConst(_lines)) {
+        QSGNode* lineSeriesNode = new QSGNode();
+        lineSeriesNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
+        _drawLineSeries(lineSeriesNode, lineSeries, true, redrawAllData);
+        mainNode->appendChildNode(lineSeriesNode);
+    }
 }
 
-void IracemaLineSeriesView::_drawScaleLabel(QSGNode *mainNode, qreal x, qreal y, QString label, QTextOption textOption)
+void IracemaLineSeriesView::_drawLineSeries(QSGNode* mainNode, IracemaLineSeries* lineSeries, bool invertY, bool redrawAllData)
 {
-    auto childNode = new QSGSimpleTextureNode;
-    QPixmap pixmap(QSize(100,100));
-    pixmap.fill(Qt::transparent);
-    const QRect rectangle = QRect(0, 0, 100, 100);
-    QPainter painter(&pixmap);
-    QFont labelFont;
-    QPen pen;
-    labelFont.setPixelSize(30);
-    pen.setColor(_scaleColor);
-    painter.setFont(labelFont);
-    painter.setPen(pen);
-    painter.drawText(rectangle, label, textOption);
-    painter.end();
+    qreal x, y, width, height;
+    _calculatePlotArea(x, y, width, height);
+    QVector<QLineF> dataToDraw;
 
-    QSGTexture *texture = window()->createTextureFromImage(pixmap.toImage());
-    childNode->setOwnsTexture(true);
-    childNode->setRect(QRectF(x, y, 50, 50));
-    childNode->markDirty(QSGNode::DirtyForceUpdate);
-    childNode->setTexture(texture);
-    mainNode->appendChildNode(childNode);
+    if(redrawAllData) {
+        lineSeries->applyDataBuffer();
+        dataToDraw = lineSeries->data();
+    } else {
+        dataToDraw = lineSeries->dataBuffer();
+        lineSeries->applyDataBuffer();
+    }
+
+    for(const auto& line : qAsConst(dataToDraw)) {
+        auto newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
+        auto newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
+        auto newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height);
+        auto newY2 = _convertValueToNewScale(line.p2().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height);
+
+        //Clip values to view boundaries
+        newY1 = std::max(0.0, std::min(newY1, height));
+        newY2 = std::max(0.0, std::min(newY2, height));
+
+        if(invertY) {
+            newY1 = this->height() - newY1 - (this->height() - height - y);
+            newY2 = this->height() - newY2 - (this->height() - height - y);
+        } else {
+            newY1 += y;
+            newY2 += y;
+        }
+
+        auto newP1 = QPointF(newX1, newY1);
+        auto newP2 = QPointF(newX2, newY2);
+        auto newLine = QLineF(newP1, newP2);
+        _drawOneLine(mainNode, newLine, lineSeries->lineWidth(), lineSeries->lineMaterial());
+    }
 }
 
-void IracemaLineSeriesView::_convertAndDrawDashedLine(QSGNode *mainNode, IracemaDashedLine *line, bool invertY)
+void IracemaLineSeriesView::_drawPeaksLabels(bool redrawAll)
+{
+    QRectF rectangle = _calculatePlotArea();
+    qreal yScaleTop = _yScaleTop();
+    qreal yScaleBottom = _yScaleBottom();
+    QList<IracemaPointLabel*> labelsToDraw;
+
+    for(auto lineSeries : qAsConst(_lines)) {
+        if(redrawAll){
+            lineSeries->applyPointLabelsBuffer();
+            labelsToDraw = lineSeries->pointLabels();
+        } else {
+            labelsToDraw = lineSeries->pointLabelsBuffer();
+            lineSeries->applyPointLabelsBuffer();
+        }
+
+        for(auto pointLabel : qAsConst(labelsToDraw)){
+            QSGNode *label = new QSGNode();
+            label->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
+            auto newX = _convertValueToNewScale(pointLabel->graphPoint().x(), _xScaleBottom, _xScaleTop, rectangle.x(), rectangle.right());
+            auto newY = _convertValueToNewScale(pointLabel->graphPoint().y(), yScaleBottom, yScaleTop, rectangle.bottom(), rectangle.top());
+            _drawScaleLabel(label, newX - 25, newY - 10, pointLabel->text(), QTextOption(Qt::AlignHCenter));
+            _peakLabelLayer->appendChildNode(label);
+        }
+    }
+}
+
+void IracemaLineSeriesView::_convertAndDrawDashedLine(QSGNode* mainNode, IracemaDashedLine* line, bool invertY)
 {
     qreal x, y, width, height;
     _calculatePlotArea(x, y, width, height);
 
-    qreal initialPointX = _convertValueToNewScale(line->initialPoint().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
-    qreal initialPointY = _convertValueToNewScale(line->initialPoint().y(), line->yScaleBottom(), line->yScaleTop(), 0, height);
+    auto initialPointX = _convertValueToNewScale(line->initialPoint().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
+    auto initialPointY = _convertValueToNewScale(line->initialPoint().y(), line->yScaleBottom(), line->yScaleTop(), 0, height);
 
-    qreal finalPointX = _convertValueToNewScale(line->finalPoint().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
-    qreal finalPointY = _convertValueToNewScale(line->finalPoint().y(), line->yScaleBottom(), line->yScaleTop(), 0, height);
+    auto finalPointX = _convertValueToNewScale(line->finalPoint().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
+    auto finalPointY = _convertValueToNewScale(line->finalPoint().y(), line->yScaleBottom(), line->yScaleTop(), 0, height);
 
     //Clip values to view boundaries
     initialPointY = std::max(0.0, std::min(initialPointY, height));
@@ -444,7 +383,7 @@ void IracemaLineSeriesView::_convertAndDrawDashedLine(QSGNode *mainNode, Iracema
     _drawDashedLine(mainNode, line->lineMaterial(), line->lineWidth(), QPointF(initialPointX, initialPointY), QPointF(finalPointX, finalPointY), 2);
 }
 
-void IracemaLineSeriesView::_drawDashedLine(QSGNode *mainNode, QSGFlatColorMaterial *lineMaterial, const qreal lineWidth, const QPointF &initialPoint, const QPointF &finalPoint, int percentage)
+void IracemaLineSeriesView::_drawDashedLine(QSGNode* mainNode, QSGFlatColorMaterial* lineMaterial, const qreal lineWidth, const QPointF &initialPoint, const QPointF &finalPoint, int percentage)
 {
     const qreal xDotValue = std::fabs(initialPoint.x() - finalPoint.x()) * percentage / 100.0;
     const qreal yDotValue = std::fabs(initialPoint.y() - finalPoint.y()) * percentage / 100.0;
@@ -460,95 +399,60 @@ void IracemaLineSeriesView::_drawDashedLine(QSGNode *mainNode, QSGFlatColorMater
     }
 }
 
-void IracemaLineSeriesView::_drawLineSeries(QSGNode *mainNode, IracemaLineSeries *lineSeries, bool invertY, bool redrawAllData)
+void IracemaLineSeriesView::_drawScaleLabel(QSGNode* mainNode, qreal x, qreal y, QString label, QTextOption textOption)
 {
-    qreal x, y, width, height;
-    _calculatePlotArea(x, y, width, height);
-    QVector<QLineF> dataToDraw;
+    auto childNode = new QSGSimpleTextureNode;
+    auto pixmap = QPixmap(QSize(100,100));
+    pixmap.fill(Qt::transparent);
+    const auto rectangle = QRect(0, 0, 100, 100);
+    QPainter painter(&pixmap);
+    QFont labelFont;
+    QPen pen;
+    labelFont.setPixelSize(30);
+    pen.setColor(_scaleColor);
+    painter.setFont(labelFont);
+    painter.setPen(pen);
+    painter.drawText(rectangle, label, textOption);
+    painter.end();
 
-    if (redrawAllData) {
-        lineSeries->applyDataBuffer();
-        dataToDraw = lineSeries->data();
-    } else {
-        dataToDraw = lineSeries->dataBuffer();
-        lineSeries->applyDataBuffer();
-    }
-
-    for (QLineF line : qAsConst(dataToDraw)) {
-        qreal newX1 = _convertValueToNewScale(line.p1().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
-        qreal newX2 = _convertValueToNewScale(line.p2().x(), _xScaleBottom, _xScaleTop, 0, width) + x;
-        qreal newY1 = _convertValueToNewScale(line.p1().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height);
-        qreal newY2 = _convertValueToNewScale(line.p2().y(), lineSeries->yScaleBottom(), lineSeries->yScaleTop(), 0, height);
-
-        //Clip values to view boundaries
-        newY1 = std::max(0.0, std::min(newY1, height));
-        newY2 = std::max(0.0, std::min(newY2, height));
-
-        if (invertY) {
-            newY1 = this->height() - newY1 - (this->height() - height - y);
-            newY2 = this->height() - newY2 - (this->height() - height - y);
-        } else {
-            newY1 += y;
-            newY2 += y;
-        }
-
-        QPointF newP1(newX1, newY1);
-        QPointF newP2(newX2, newY2);
-        QLineF newLine(newP1, newP2);
-        _drawOneLine(mainNode, newLine, lineSeries->lineWidth(), lineSeries->lineMaterial());
-    }
+    auto texture = window()->createTextureFromImage(pixmap.toImage());
+    childNode->setOwnsTexture(true);
+    childNode->setRect(QRectF(x, y, 50, 50));
+    childNode->markDirty(QSGNode::DirtyForceUpdate);
+    childNode->setTexture(texture);
+    mainNode->appendChildNode(childNode);
 }
 
-void IracemaLineSeriesView::_drawLines(QSGNode *mainNode, bool redrawAllData)
+void IracemaLineSeriesView::_drawOneLine(QSGNode* mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial* lineMaterial)
 {
-    for (auto lineSeries : qAsConst(_lines)) {
-        QSGNode *lineSeriesNode = new QSGNode();
-        lineSeriesNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
-        _drawLineSeries(lineSeriesNode, lineSeries, true, redrawAllData);
-        mainNode->appendChildNode(lineSeriesNode);
-    }
+    auto childNode = new QSGGeometryNode;
+
+    auto geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 2);
+    geometry->setLineWidth(lineWidth);
+    geometry->setDrawingMode(QSGGeometry::DrawLineStrip);
+    childNode->setGeometry(geometry);
+    childNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
+
+    childNode->setMaterial(lineMaterial);
+
+    auto vertices = geometry->vertexDataAsPoint2D();
+
+    vertices[0].set(line.x1(), line.y1());
+    vertices[1].set(line.x2(), line.y2());
+
+    mainNode->appendChildNode(childNode);
 }
 
-void IracemaLineSeriesView::_drawPeaksLabels(bool redrawAll)
+QRectF IracemaLineSeriesView::_calculatePlotArea()
 {
-    QRectF rectangle = _calculatePlotArea();
-    qreal yScaleTop = _yScaleTop();
-    qreal yScaleBottom = _yScaleBottom();
-    QList<IracemaPointLabel*> labelsToDraw;
+    qreal x, y, width, heigth;
 
-    for (auto lineSeries : qAsConst(_lines)) {
-        if(redrawAll){
-            lineSeries->applyPointLabelsBuffer();
-            labelsToDraw = lineSeries->pointLabels();
-        } else {
-            labelsToDraw = lineSeries->pointLabelsBuffer();
-            lineSeries->applyPointLabelsBuffer();
-        }
-
-        for (auto pointLabel : qAsConst(labelsToDraw)){
-            QSGNode *label = new QSGNode();
-            label->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
-            qreal newX = _convertValueToNewScale(pointLabel->graphPoint().x(), _xScaleBottom, _xScaleTop, rectangle.x(), rectangle.right());
-            qreal newY = _convertValueToNewScale(pointLabel->graphPoint().y(), yScaleBottom, yScaleTop, rectangle.bottom(), rectangle.top());
-            _drawScaleLabel(label, newX - 25, newY - 10, pointLabel->text(), QTextOption(Qt::AlignHCenter));
-            _peakLabelLayer->appendChildNode(label);
-        }
-    }
-}
-
-qreal IracemaLineSeriesView::_convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop)
-{
-    qreal newValue = oldValue - oldScaleBottom;
-    newValue *= newScaleTop - newScaleBottom;
-    newValue /= oldScaleTop - oldScaleBottom;
-    newValue += newScaleBottom;
-
-    return newValue;
+    return _calculatePlotArea(x,y,width,heigth);
 }
 
 QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth)
 {
-    if (_hasScales) {
+    if(_hasScales) {
         x = _horizontalScaleWidth;
         y = _verticalScaleHeigth * 0.25;
         width = this->width() - _horizontalScaleWidth - _plotAreaRigthPadding;
@@ -563,18 +467,11 @@ QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &widt
     return QRectF(x, y, width, heigth);
 }
 
-QRectF IracemaLineSeriesView::_calculatePlotArea()
-{
-    qreal x, y, width, heigth;
-
-    return _calculatePlotArea(x,y,width,heigth);
-}
-
 qreal IracemaLineSeriesView::_yScaleTop()
 {
     qreal maxScaleTop = 0;
-    for (auto line : qAsConst(_lines)) {
-        if (line->yScaleTop() > maxScaleTop)
+    for(auto line : qAsConst(_lines)) {
+        if(line->yScaleTop() > maxScaleTop)
             maxScaleTop = line->yScaleTop();
     }
 
@@ -584,113 +481,54 @@ qreal IracemaLineSeriesView::_yScaleTop()
 qreal IracemaLineSeriesView::_yScaleBottom()
 {
     qreal mimScaleBottom = 0;
-    for (auto line : qAsConst(_lines)) {
-        if (line->yScaleBottom() < mimScaleBottom)
+    for(auto line : qAsConst(_lines)) {
+        if(line->yScaleBottom() < mimScaleBottom)
             mimScaleBottom = line->yScaleBottom();
     }
 
     return mimScaleBottom;
 }
 
-void IracemaLineSeriesView::appendLine(QQmlListProperty<IracemaLineSeries> *list, IracemaLineSeries *line)
+qreal IracemaLineSeriesView::_truncate(qreal value, int numberOfDigits) const
 {
-    IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
+    double truncValue = 0;
+    numberOfDigits = (int) std::pow(10, numberOfDigits);
 
-    if (view) {
-        line->setParentItem(view);
-        view->_lines.append(line);
-        connect(line, &IracemaLineSeries::yScaleTopChanged, view, [view] { view->_setRedrawAll(); });
-        connect(line, &IracemaLineSeries::yScaleBottomChanged, view, [view] { view->_setRedrawAll(); });
-        connect(line, &IracemaLineSeries::graphPointLabelsChanged, view, [view] { view->_redrawPeakLabels = true; });
-    }
+    truncValue = int(value * numberOfDigits);
+    return truncValue / numberOfDigits;
 }
 
-void IracemaLineSeriesView::appendDashedLine(QQmlListProperty<IracemaDashedLine> *list, IracemaDashedLine *label)
+qreal IracemaLineSeriesView::_convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop)
 {
-    IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
+    qreal newValue = oldValue - oldScaleBottom;
+    newValue *= newScaleTop - newScaleBottom;
+    newValue /= oldScaleTop - oldScaleBottom;
+    newValue += newScaleBottom;
 
-    if (view) {
-        label->setParentItem(view);
-        view->_dashedLines.append(label);
-    }
+    return newValue;
 }
 
-void IracemaLineSeriesView::appendHorizontalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label)
+// void IracemaLineSeriesView::_deleteLists() {
+//     for(auto &line : _lines)
+//         delete line;
+//     _lines.clear();
+
+//     for(auto &dashedLine : _dashedLines)
+//         delete dashedLine;
+//     _dashedLines.clear();
+
+//     for(auto &vScale : _verticalScaleLabels)
+//         delete vScale;
+//     _verticalScaleLabels.clear();
+
+//     for(auto &hScale : _horizontalScaleLabels)
+//         delete hScale;
+//     _horizontalScaleLabels.clear();
+// }
+
+void IracemaLineSeriesView::_onGridSizeChanged()
 {
-    IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
-
-    if (view) {
-        label->setParentItem(view);
-        view->_horizontalScaleLabels.append(label);
-    }
-}
-
-void IracemaLineSeriesView::appendVerticalScaleLabel(QQmlListProperty<IracemaScaleLabel> *list, IracemaScaleLabel *label)
-{
-    IracemaLineSeriesView *view = qobject_cast<IracemaLineSeriesView *>(list->object);
-
-    if (view) {
-        label->setParentItem(view);
-        view->_verticalScaleLabels.append(label);
-    }
-}
-
-void IracemaLineSeriesView::addPoint(quint32 lineIndex, QPointF point)
-{
-    _lines[lineIndex]->addPoint(point);
-}
-
-void IracemaLineSeriesView::addPoint(quint32 lineIndex, qreal x, qreal y)
-{
-    _lines[lineIndex]->addPoint(QPointF(x, y));
-}
-
-void IracemaLineSeriesView::addPoints(quint32 lineIndex, QList<QPointF> points)
-{
-    for (QPointF point: points)
-        _lines[lineIndex]->addPoint(point);
-}
-
-void IracemaLineSeriesView::clearData()
-{
-    for (auto line : qAsConst(_lines))
-        line->clearData();
-
     _redrawGrid = true;
-}
-
-void IracemaLineSeriesView::clearLine(quint32 lineIndex)
-{
-    _lines[lineIndex]->clearData();
-
-    _redrawGrid = true;
-}
-
-const QColor &IracemaLineSeriesView::gridColor() const
-{
-    return _gridColor;
-}
-
-void IracemaLineSeriesView::setGridColor(const QColor &newGridColor)
-{
-    if (_gridColor == newGridColor)
-        return;
-    _gridColor = newGridColor;
-    _gridMaterial->setColor(_gridColor);
-    emit gridColorChanged();
-}
-
-const QColor &IracemaLineSeriesView::scaleColor() const
-{
-    return _scaleColor;
-}
-
-void IracemaLineSeriesView::setScaleColor(const QColor &newScaleColor)
-{
-    if (_scaleColor == newScaleColor)
-        return;
-    _scaleColor = newScaleColor;
-    emit scaleColorChanged();
 }
 
 void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -700,40 +538,20 @@ void IracemaLineSeriesView::geometryChanged(const QRectF &newGeometry, const QRe
 
     _redrawGrid = true;
 
-    if (_updateTimerId == -1)
+    if(_updateTimerId == -1)
         _updateTimerId = startTimer(_updateTime, Qt::PreciseTimer);
 
 }
 
 void IracemaLineSeriesView::timerEvent(QTimerEvent *event)
 {
-    if (event->timerId() == _updateTimerId && !_isProcessingImage)
+    if(event->timerId() == _updateTimerId && !_isProcessingImage)
         update();
 }
 
-void IracemaLineSeriesView::_drawOneLine(QSGNode *mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial *lineMaterial)
+QSGNode* IracemaLineSeriesView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*)
 {
-    auto childNode = new QSGGeometryNode;
-
-    auto geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 2);
-    geometry->setLineWidth(lineWidth);
-    geometry->setDrawingMode(QSGGeometry::DrawLineStrip);
-    childNode->setGeometry(geometry);
-    childNode->setFlags(QSGNode::OwnedByParent | QSGNode::OwnsGeometry);
-
-    childNode->setMaterial(lineMaterial);
-
-    QSGGeometry::Point2D *vertices = geometry->vertexDataAsPoint2D();
-
-    vertices[0].set(line.x1(), line.y1());
-    vertices[1].set(line.x2(), line.y2());
-
-    mainNode->appendChildNode(childNode);
-}
-
-QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
-{
-    if (!oldNode) {
+    if(!oldNode) {
         oldNode = new QSGNode;
         _backgroundLayer = new QSGSimpleRectNode(QRectF(0, 0, this->width(), this->height()), _backgroundColor);
         _gridLayer = new QSGNode;
@@ -743,7 +561,7 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
         oldNode->appendChildNode(_peakLabelLayer);
     }
 
-    if (_redrawGrid) {
+    if(_redrawGrid) {
         oldNode->removeChildNode(_gridLayer);
         delete(_gridLayer);
         _gridLayer = new QSGNode;
@@ -756,7 +574,7 @@ QSGNode *IracemaLineSeriesView::updatePaintNode(QSGNode *oldNode, UpdatePaintNod
         _drawLines(_gridLayer);
     }
 
-    if(_redrawPeakLabels){
+    if(_redrawPeakLabels) {
         oldNode->removeChildNode(_peakLabelLayer);
         delete(_peakLabelLayer);
         _peakLabelLayer = new QSGNode;

@@ -1,13 +1,18 @@
 #include "iracemadashedline.h"
 
 IracemaDashedLine::IracemaDashedLine() :
-_initialPoint(QPointF(0, 0)),
-_finalPoint(QPointF(0, 0)),
-_lineWidth(1),
-_yScaleTop(1000),
-_yScaleBottom(0),
+_lineWidth(),
+_yScaleTop(100),
+_yScaleBottom(),
+_initialPoint(),
+_finalPoint(),
 _lineColor(Qt::black),
 _lineMaterial(new QSGFlatColorMaterial())
 {
     _lineMaterial->setColor(_lineColor);
 }
+
+// IracemaDashedLine::~IracemaDashedLine() {
+//     qDebug() << "oi";
+//     delete _lineMaterial;
+// }
