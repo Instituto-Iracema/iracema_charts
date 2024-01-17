@@ -215,7 +215,7 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode* mainNode)
 
     for(auto label : qAsConst(_verticalScaleLabels)) {
         auto newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
-        _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, newY - 10, label->scaleText(), QTextOption(Qt::AlignRight));
+        _drawScaleLabel(mainNode, (x + width) / 2, newY - 40, label->scaleText(), QTextOption(Qt::AlignCenter));
     }
 }
 

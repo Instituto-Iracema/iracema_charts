@@ -238,7 +238,6 @@ public:
 
 private:
     // QProperties
-
     bool _hasScales = false;
     bool _removeGridHorizontal = false;
 
