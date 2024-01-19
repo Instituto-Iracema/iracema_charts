@@ -127,6 +127,9 @@ void IracemaLineSeriesView::_drawGrid(QSGNode* mainNode)
 
     _drawGridVertical(mainNode);
 
+    if (_hasScales)
+        _drawTitles(mainNode);
+
     for(auto line: qAsConst(_dashedLines))
         _convertAndDrawDashedLine(mainNode, line, true);
 }
@@ -215,7 +218,7 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode* mainNode)
 
     for(auto label : qAsConst(_verticalScaleLabels)) {
         auto newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
-        _drawScaleLabel(mainNode, (x + width) / 2, newY - 40, label->scaleText(), QTextOption(Qt::AlignCenter));
+        _drawScaleLabel(mainNode, (x + width) / 2, newY - 40, label->scaleText());
     }
 }
 
@@ -282,6 +285,61 @@ void IracemaLineSeriesView::_drawGridVertical(QSGNode* mainNode)
         newX -= 25;
         _drawScaleLabel(mainNode, newX , (_hasScales? y + height + _verticalScaleHeigth * 0.15 : y + height), label->scaleText(), QTextOption(Qt::AlignHCenter));
     }
+}
+
+void IracemaLineSeriesView::_drawTitles(QSGNode* mainNode)
+{
+    const auto width = 300;
+    const auto height = 20;
+
+    const auto rect = _calculatePlotArea();
+    const qint32 xMidPoint = (rect.width() - width)/2 + rect.x();
+    const qint32 yMidPoint = (rect.height() - width)/2 + rect.y();
+
+    QFont font;
+    font.setPixelSize(18);
+    QPen pen;
+    pen.setColor(_scaleColor);
+    QTextOption textOption(Qt::AlignCenter);
+
+    auto pixmapX = QPixmap(QSize(width, height));
+    pixmapX.fill(Qt::transparent);
+    QPainter painterX(&pixmapX);
+    auto pixmapY = QPixmap(QSize(height, width));
+    pixmapY.fill(Qt::transparent);
+    QPainter painterY(&pixmapY);
+
+    painterX.setFont(font);
+    painterX.setPen(pen);
+    painterY.setFont(font);
+    painterY.setPen(pen);
+
+    const auto rectangleX = QRect(0, 0, width, height);
+    painterX.drawText(rectangleX, _xTitle, textOption);
+    const auto rectangleY = QRect(0, 0, width, height);
+    painterY.translate(0, width);
+    painterY.rotate(-90);
+    painterY.drawText(rectangleY, _yTitle, textOption);
+    painterY.translate(0, -width);
+
+    auto textureX = window()->createTextureFromImage(pixmapX.toImage());
+    auto textureY = window()->createTextureFromImage(pixmapY.toImage());
+
+    auto childNodeX = new QSGSimpleTextureNode;
+    childNodeX->setOwnsTexture(true);
+    childNodeX->setRect(QRectF(xMidPoint, rect.y() + rect.height() + 23, width, height));
+    childNodeX->markDirty(QSGNode::DirtyForceUpdate);
+    childNodeX->setTexture(textureX);
+    childNodeX->setFlags(QSGNode::OwnedByParent);
+    mainNode->appendChildNode(childNodeX);
+
+    auto childNodeY = new QSGSimpleTextureNode;
+    childNodeY->setOwnsTexture(true);
+    childNodeY->setRect(QRectF(3, yMidPoint, height, width));
+    childNodeY->markDirty(QSGNode::DirtyForceUpdate);
+    childNodeY->setTexture(textureY);
+    childNodeY->setFlags(QSGNode::OwnedByParent);
+    mainNode->appendChildNode(childNodeY);
 }
 
 void IracemaLineSeriesView::_drawLines(QSGNode* mainNode, bool redrawAllData)
@@ -410,21 +468,20 @@ void IracemaLineSeriesView::_drawDashedLine(QSGNode* mainNode, const QColor& lin
 
 void IracemaLineSeriesView::_drawScaleLabel(QSGNode* mainNode, qreal x, qreal y, QString label, QTextOption textOption)
 {
-    auto pixmap = QPixmap(QSize(100,100));
+    auto pixmap = QPixmap(QSize(50,50));
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
 
     QFont labelFont;
-    labelFont.setPixelSize(30);
+    labelFont.setPixelSize(15);
     painter.setFont(labelFont);
 
     QPen pen;
     pen.setColor(_scaleColor);
     painter.setPen(pen);
 
-    const auto rectangle = QRect(0, 0, 100, 100);
+    const auto rectangle = QRect(0, 0, 50, 50);
     painter.drawText(rectangle, label, textOption);
-    painter.end();
 
     auto texture = window()->createTextureFromImage(pixmap.toImage());
 

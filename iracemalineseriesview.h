@@ -41,6 +41,9 @@ class IracemaLineSeriesView : public QQuickItem
     Q_PROPERTY(qreal horizontalScaleWidth READ horizontalScaleWidth WRITE setHorizontalScaleWidth NOTIFY horizontalScaleWidthChanged)
     Q_PROPERTY(qreal plotAreaRigthPadding READ plotAreaRigthPadding WRITE setPlotAreaRigthPadding NOTIFY plotAreaRigthPaddingChanged)
 
+    Q_PROPERTY(QString xTitle READ xTitle WRITE setXTitle NOTIFY xTitleChanged)
+    Q_PROPERTY(QString yTitle READ yTitle WRITE setYTitle NOTIFY yTitleChanged)
+
     Q_PROPERTY(qreal gridLineWidth READ gridLineWidth WRITE setGridLineWidth NOTIFY gridLineWidthChanged)
     Q_PROPERTY(QColor gridColor READ gridColor WRITE setGridColor NOTIFY gridColorChanged)
     Q_PROPERTY(QSizeF gridSize READ gridSize WRITE setGridSize NOTIFY gridSizeChanged)
@@ -164,6 +167,26 @@ public:
         emit plotAreaRigthPaddingChanged();
     }
 
+    QString xTitle() const {
+        return _xTitle;
+    }
+    void setXTitle(QString newXTitle) {
+        if(_xTitle.compare(newXTitle) == 0)
+            return;
+        _xTitle = newXTitle;
+        emit xTitleChanged();
+    }
+
+    QString yTitle() const {
+        return _yTitle;
+    }
+    void setYTitle(QString newYTitle) {
+        if(_yTitle.compare(newYTitle) == 0)
+            return;
+        _yTitle = newYTitle;
+        emit yTitleChanged();
+    }
+
     qreal gridLineWidth() const {
         return _gridLineWidth;
     }
@@ -247,9 +270,12 @@ private:
     qreal _xScaleBottom = 0;
     qreal _xTickCount = 0;
     qreal _yTickCount = 0;
-    qreal _verticalScaleHeigth = 40;
+    qreal _verticalScaleHeigth = 50;
     qreal _horizontalScaleWidth = 50;
     qreal _plotAreaRigthPadding = _horizontalScaleWidth * 0.3;
+
+    QString _xTitle = "";
+    QString _yTitle = "";
 
     qreal _gridLineWidth = 1;
     QColor _gridColor = Qt::gray;
@@ -284,6 +310,7 @@ private:
     void _drawTopAndBottom(QSGNode* mainNode);
     void _drawGridHorizontal(QSGNode* mainNode);
     void _drawGridVertical(QSGNode* mainNode);
+    void _drawTitles(QSGNode* mainNode);
 
     void _drawLines(QSGNode* lineSeriesNode, bool redrawAllData = false);
     void _drawLineSeries(QSGNode* mainNode, IracemaLineSeries* line, bool invertY = true, bool redrawAllData = false);
@@ -336,6 +363,9 @@ signals:
     void verticalScaleHeigthChanged();
     void horizontalScaleWidthChanged();
     void plotAreaRigthPaddingChanged();
+
+    void xTitleChanged();
+    void yTitleChanged();
 
     void gridLineWidthChanged();
     void gridColorChanged();
