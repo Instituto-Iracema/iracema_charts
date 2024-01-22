@@ -155,8 +155,10 @@ void IracemaLineSeriesView::_drawTopAndBottom(QSGNode* mainNode)
         return;
 
     for(auto label : qAsConst(_verticalScaleLabels)) {
+        auto strings = label->scaleText().split("|", Qt::SkipEmptyParts);
         auto newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
-        _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, newY - 10, label->scaleText(), QTextOption(Qt::AlignRight));
+        _drawScaleLabel(mainNode, x - 55, newY - 10, strings.at(0), QTextOption(Qt::AlignRight));
+        _drawScaleLabel(mainNode, x + width + 10, newY - 10, strings.at(1), QTextOption(Qt::AlignLeft));
     }
 }
 
@@ -210,7 +212,7 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode* mainNode)
             }
 
             truncValue = _truncate(labelValue, numberOfDigits);
-            _drawScaleLabel(mainNode, (_horizontalScaleWidth * 0.9) - 50, currentY - 10, QString::number(truncValue), QTextOption(Qt::AlignRight));
+            _drawScaleLabel(mainNode, x - 55, currentY - 10, QString::number(truncValue), QTextOption(Qt::AlignRight));
         }
         currentY += gridHeigth;
         labelValue -= labelValueInterval;
@@ -218,7 +220,7 @@ void IracemaLineSeriesView::_drawGridHorizontal(QSGNode* mainNode)
 
     for(auto label : qAsConst(_verticalScaleLabels)) {
         auto newY = _convertValueToNewScale(label->scalePoint(), _yScaleBottom(), _yScaleTop(), plotArea.bottom(), plotArea.top());
-        _drawScaleLabel(mainNode, (x + width) / 2, newY - 40, label->scaleText());
+        _drawScaleLabel(mainNode, x + width + 10, newY - 10, label->scaleText(), QTextOption(Qt::AlignLeft));
     }
 }
 
@@ -297,7 +299,7 @@ void IracemaLineSeriesView::_drawTitles(QSGNode* mainNode)
     const qint32 yMidPoint = (rect.height() - width)/2 + rect.y();
 
     QFont font;
-    font.setPixelSize(18);
+    font.setPixelSize(15);
     QPen pen;
     pen.setColor(_scaleColor);
     QTextOption textOption(Qt::AlignCenter);
@@ -327,7 +329,7 @@ void IracemaLineSeriesView::_drawTitles(QSGNode* mainNode)
 
     auto childNodeX = new QSGSimpleTextureNode;
     childNodeX->setOwnsTexture(true);
-    childNodeX->setRect(QRectF(xMidPoint, rect.y() + rect.height() + 23, width, height));
+    childNodeX->setRect(QRectF(xMidPoint, rect.y() + rect.height() + 25, width, height));
     childNodeX->markDirty(QSGNode::DirtyForceUpdate);
     childNodeX->setTexture(textureX);
     childNodeX->setFlags(QSGNode::OwnedByParent);
@@ -335,7 +337,7 @@ void IracemaLineSeriesView::_drawTitles(QSGNode* mainNode)
 
     auto childNodeY = new QSGSimpleTextureNode;
     childNodeY->setOwnsTexture(true);
-    childNodeY->setRect(QRectF(3, yMidPoint, height, width));
+    childNodeY->setRect(QRectF(0, yMidPoint, height, width));
     childNodeY->markDirty(QSGNode::DirtyForceUpdate);
     childNodeY->setTexture(textureY);
     childNodeY->setFlags(QSGNode::OwnedByParent);
@@ -525,7 +527,7 @@ QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &widt
     if(_hasScales) {
         x = _horizontalScaleWidth;
         y = _verticalScaleHeigth * 0.25;
-        width = this->width() - _horizontalScaleWidth - _plotAreaRigthPadding;
+        width = this->width() - _horizontalScaleWidth * 2 - _plotAreaRigthPadding;
         heigth = this->height() - _verticalScaleHeigth * 1.25;
     } else {
         x = 0;
