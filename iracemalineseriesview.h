@@ -1018,77 +1018,531 @@ private:
     */
     void _drawTopAndBottom(QSGNode* mainNode);
 
-    
+    /**
+     * \fn _drawGridHorizontal
+     * \param mainNode The main node of the grid.
+     * \brief Draws the horizontal grid.
+     * \details Creates the x, y, width and height variables.
+     * \n Calls the _calculatePlotArea function, which is the area to be plotted.
+     * \n Sets the currentY variable as the y variable.
+     * \n Sets the limitY variable as the y variable plus the height variable.
+     * \n Sets the grid height as zero
+     * \n Gets the the label, and cretes the labelValueInterval variable.
+     * \n Creates the variables drawedGridLines and GRID_LINES_TO_DRAW, used to solve problems of rouding labelValueInterval by odd tickCount.
+     * \n Then checks if there is a _yTickCount, then:
+     * \n  -set the gridHeight as the height variable divided by the _yTickCount.
+     * \n  -Set the labelValueInterval as the labelValue divided by the _yTickCount.
+     * \n Else, then:
+     * \n  -Set the gridHeigth as the height variable.
+     * \n  -Set the labelValueInterval as the labelValue divided by the height variable, divided by the gridHeigth.
+     * \n Then, while the currentY is lower than the limitY, or the drawedGridLines is lower than the GRID_LINES_TO_DRAW, then:
+     * \n  -Checks if the current Y is greater than the limit value, if it is:
+     * \n    --Sets the currentY as the limitY, and the labelValue as _yScaleBottom.
+     * \n  -Creates a new material and sets it color as the grid color
+     * \n  -Creates a new line and draws it, then add it to the counter of drawedGridLines.
+     * \n  -If it has scales then:
+     * \n    -- Sets the number of digits as 2.
+     * \n    -- Creates a truncValue variable.
+     * \n    -- Finds the number of digits where they became equal
+     * \n    -- Finds the number of digits where they became different
+     * \n    -- Truncate them and draw the scale label.
+     * \n  -Increments the currentY by the gridHeight.
+     * \n  -Decrements the labelValue by the labelValueInterval.
+     * \n For each label in the _verticalScaleLabels, then draws the scale label with new values of Y.
+    */
     void _drawGridHorizontal(QSGNode* mainNode);
+
+    /**
+     * \fn _drawGridVertical
+     * \param mainNode The main node of the grid.
+     * \brief Draws the vertical grid.
+     * \details Creates the x, y, width and height variables.
+     * \n Calls the _calculatePlotArea function, which is the area to be plotted.
+     * \n Sets the currentX variable as the x variable.
+     * \n Sets the limitX variable as the x variable plus the width variable.
+     * \n Sets the grid width as zero
+     * \n Gets the the label, and cretes the labelValueInterval variable.
+     * \n Creates the variables drawedGridLines and GRID_LINES_TO_DRAW, used to solve problems of rouding labelValueInterval by odd tickCount.
+     * \n Then checks if there is a _xTickCount, then:
+     * \n  -set the gridWidth as the width variable divided by the _xTickCount.
+     * \n  -Set the labelValueInterval as the labelValue divided by the _xTickCount.
+     * \n Else, then:
+     * \n  -Set the gridWidth as the width variable.
+     * \n  -Set the labelValueInterval as the labelValue divided by the width variable, divided by the gridWidth.
+     * \n Then, while the currentX is lower than the limitX, or the drawedGridLines is lower than the GRID_LINES_TO_DRAW, then:
+     * \n  -Checks if the current X is greater than the limit value, if it is:
+     * \n    --Sets the currentX as the limitX, and the labelValue as _xScaleBottom.
+     * \n  -Creates a new material and sets it color as the grid color
+     * \n  -Creates a new line and draws it, then add it to the counter of drawedGridLines.
+     * \n  -If it has scales then:
+     * \n    -- Sets the number of digits as 2.
+     * \n    -- Creates a truncValue variable
+     * \n    -- Finds the number of digits where they became equal
+     * \n    -- Finds the number of digits where they became different
+     * \n    -- Truncate them and draw the scale label.
+     * \n  -Increments the currentX by the gridWidth.
+     * \n  -Icrements the labelValue by the labelValueInterval.
+     * \n For each label in the _horizontalScaleLabels, then draws the scale label with new values of X.
+     * \n  -Center the label component.
+    */
     void _drawGridVertical(QSGNode* mainNode);
+
+    /**
+     * \fn _drawTitles
+     * \param mainNode The main node of the grid.
+     * \brief Draws the titles.
+     * \details Creates the widht and height variables and set them as 300 and 20 respectively.
+     * \n Creates the plot area and sets the x and y mid points.
+     * \n Instantiates the font and pen .
+     * \n Instantiates the pimaxY and pimaxX objects and set them as transparents.
+     * \n Sets the fonts and pens of the painterX and painterY objects.
+     * \n Creates a rectangle X and Y objects, draws text of painterX, and also set the translation, rotation and text of PainterY
+     * \n Creates texture for the X and Y objects.
+     * \n Creates a child node for the X and Y objects, setting it's texture, rectangle, markDirty, and flags, for each of them, and also append them as child node of the main Node.
+     * 
+    */
     void _drawTitles(QSGNode* mainNode);
 
+    /**
+     * \fn _drawLines
+     * \param lineSeriesNode The main node of the lines.
+     * \param redrawAllData The boolean that defines if all data will be redrawn.
+     * \brief Draws the lines.
+     * \details For each lineSeries in lines:
+     * \n - Creates a line series node, sets it flags if it it owned by a parent or it has its own geometry.
+     * \n - Also Draws the çline Series and append the lineSeriesNode as a child node of the main node.
+    */
     void _drawLines(QSGNode* lineSeriesNode, bool redrawAllData = false);
+
+    /**
+     * \fn _drawLineSeries
+     * \param mainNode The main node of the lines.
+     * \param lineSeries The line that will be drawn.
+     * \param invertY The boolean that defines if the Y axis will be inverted.
+     * \param redrawAllData The boolean that defines if all data will be redrawn.
+     * \brief Draws the line series.
+     * \details Creates the x, y, width and height variables.
+     * \n Calls the _calculatePlotArea function, which is the area to be plotted.
+     * \n Creates a dataToDraw variable,which is a list of points.
+     * \n If the redrawAllData is true, then:
+     * \n - Apply data buffer to LineSeries.
+     * \n - Sets dataToDraw as the data of the lineSeries.
+     * \n Else:
+     * \n - Sets dataToDraw as the data buffer of the lineSeries.
+     * \n - Apply data buffer to LineSeries.
+     * \n For each line in dataToDraw, then:
+     * \n - Creates a new X1,X2,Y1 and Y2 variables.
+     * \n - Clip the values to view boundaries.
+     * \n - Checks if the Y is inverted, if it is, then invert the Y1 and Y2.
+     * \n - Else if the Y is not inverted, then just increment the Y1 and Y2 by the y variable.
+     * \n - Creates the points P1 and P2 and creates a line with them.
+     * \n - Creates a new material and sets it color as the line color.
+     * \n - Draws the line.
+     **/ 
     void _drawLineSeries(QSGNode* mainNode, IracemaLineSeries* line, bool invertY = true, bool redrawAllData = false);
     
+    /**
+     * \fn _drawPeaksLabels
+     * \param redrawAll The boolean that defines if all data will be redrawn.
+     * \brief Draws the peak labels.
+     * \details Creates the reclangle plot area, the y scale top and bottom variables, and the labels to draw.
+     * \n For each line series in lines, then:
+     * \n - If redrawAll is true, then:
+     * \n  --Apply point labels buffer to LineSeries.
+     * \n  --Sets the labelsToDraw as the point labels of the line series.
+     * \n -Else:
+     * \n  --Sets the labelsToDraw as the point labels buffer of the line series.
+     * \n  --Apply point labels buffer to LineSeries.
+     * \n - For each point label in labels to draw, then:
+     * \n  --Creates a label variable.
+     * \n  --Sets the flag of the label according if it is owned by a parent or it has its own geometry.
+     * \n  --Creates newX and newY variables.
+     * \n  --Draws the scale label.
+     * \n  -- Append the child node of the peak label layer, as the label.
+    */
     void _drawPeaksLabels(bool redrawAll = false);
 
+    /**
+     * \fn _drawPeakLabel
+     * \param mainNode The main node of the peak label.
+     * \param line The line that will be drawn.
+     * \param invertY The boolean that defines if the Y axis will be inverted.
+     * \brief Draws the peak label.
+     * \details Calculates the plot area.
+     * \n Creates variables for the inital points x and y,and the final points x and y.
+     * \n Clips the values to view boundaries.
+     * \n Checks if the Y is inverted, if it is, then invert the Y1 and Y2.
+     * \n If it is not inverted, then just increment the Y1 and Y2 by the y variable.
+     * \n Draws the dashed line.
+     **/
     void _convertAndDrawDashedLine(QSGNode* mainNode, IracemaDashedLine* line, bool invertY);
+
+    /**
+     * \fn _drawDashedLine
+     * \param mainNode The main node of the dashed line.
+     * \param lineColor The color of the dashed line.
+     * \param lineWidth The width of the dashed line.
+     * \param initialPoint The initial point of the dashed line.
+     * \param finalPoint The final point of the dashed line.
+     * \param percentage The percentage of the dashed line.
+     * \brief Draws the dashed line.
+     * \details Creates variables for the x and y dot values, and for the current X and Y which are the initial points.
+     * \n For each point in 100 divided by the double of the percentage, then:
+     * \n  - Createss a new line material and sets it color as the line color.
+     * \n  - Creates a new line.
+     * \n  - Draws the line with the main node, new line, line width and line material.
+     * \n  - Increments the current X by the doubled value of x dot.
+     * \n  - Decrements the current Y by the doubled value of y dot.
+    */
     void _drawDashedLine(QSGNode* mainNode, const QColor& lineColor, const qreal lineWidth, const QPointF &initialPoint, const QPointF &finalPoint, int percentage);
 
+    /**
+     * \fn _drawScaleLabel
+     * \param mainNode The main node of the scale label.
+     * \param x The x coordinate of the scale label.
+     * \param y The y coordinate of the scale label.
+     * \param label The label that will be drawn.
+     * \param textOption The text option of the scale label.
+     * \brief Draws the scale label.
+     * \details Creates a transparent pixmap, and a painter with it.
+     * \n Creates a font and sets it as the painter font.
+     * \n Creates a pen and sets it as the painter pen.
+     * \n Creates a rectangle and draws the text of the painter with the rectangle and the text option.
+     * \n Creates a texture from the pixmap.
+     * \n Creates a child node, setting it's texture, rectangle, markDirty, and flags, and also append it as child node of the main Node.
+    */
     void _drawScaleLabel(QSGNode* mainNode, qreal x, qreal y, QString label, QTextOption textOption = QTextOption(Qt::AlignCenter));
+
+    /**
+     * \fn _drawOneLine
+     * \param mainNode The main node of the line.
+     * \param line The line that will be drawn.
+     * \param lineWidth The width of the line.
+     * \param lineMaterial The material of the line.
+     * \brief Draws the line.
+     * \details Creates a geometry object, and sets its line width and drawing mode.
+     * \n Creates a child node, setting it's geometry as the geometry object, sets the material as the line material, and also sets its flags according if it is owned by a parent or it has its own geometry, or if it owns material.
+     * \n Get the verticies of the geometry object as a 2D point.
+     * \n Sets the two vertices as the line points (x1,y1) and (x2,y2).
+     * \n Append the child node of the main node, as the child node.
+    */
     void _drawOneLine(QSGNode* mainNode, QLineF line, qreal lineWidth, QSGFlatColorMaterial* lineMaterial);
 
+    /**
+     * \fn _calculatePlotArea
+     * \brief Calculates the plot area.
+     * \details Creates the x, y, width and height variables.
+     * \n Returns the plot area.
+    */
     QRectF _calculatePlotArea();
+
+    /**
+     * \fn _calculatePlotArea
+     * \param x The x coordinate of the plot area.
+     * \param y The y coordinate of the plot area.
+     * \param width The width of the plot area.
+     * \param heigth The height of the plot area.
+     * \brief Calculates the plot area.
+     * \details Checks if the _hasScales is true, if it is, then:
+     * \n - Sets x as the _horizontalScaleWidth.
+     * \n - Sets y as 25% of the _verticalScaleHeigth.
+     * \n - Sets the width as the width variable minus the _horizontalScaleWidth minus the _plotAreaRigthPadding.
+     * \n - Sets the height as the height variable minus _verticalScaleHeigth times 1.25.
+     * \n Else, then:
+     * \n - Sets x and y as 0.
+     * \n - Sets the width as the width variable.
+     * \n - Sets the height as the height variable.
+     * \n Returns the plot area, which is a QRectF oject.
+     * \return plotArea (QRectF)
+    */
     QRectF _calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth);
 
+    /**
+     * \fn _yScaleTop
+     * \brief Getter of the yScaleTop property.
+     * \details Creates a maxScaleTop variable as 0.
+     * \n For each line in lines, then:
+     * \n -Checks if the line yScaleTop is greater than the maxScaleTop, if it is, then:
+     * \n  --Sets the maxScaleTop as the line yScaleTop.
+     * \n Returns the maxScaleTop.
+    */
     qreal _yScaleTop();
+
+    /**
+     * \fn _yScaleBottom
+     * \brief Getter of the yScaleBottom property.
+     * \details Creates a minScaleBottom variable as 0.
+     * \n For each line in lines, then:
+     * \n -Checks if the line yScaleBottom is lower than the minScaleBottom, if it is, then:
+     * \n  --Sets the minScaleBottom as the line yScaleBottom.
+     * \n Returns the minScaleBottom.
+    */
     qreal _yScaleBottom();
 
+    /**
+     * \fn _truncate
+     * \param value The value that will be truncated.
+     * \param numberOfDigits The number of digits that will be truncated.
+     * \brief Truncates the value.
+     * \details Creates a truncValue variable as 0.
+     * \n Creates the number of digits where they became equal and different. It will be 10 to the power of the number of digits.
+     * \n Truncates the value, it will be the value multiplied by the number of digits.
+     * \n Returns the truncValue divided by the number of digits.
+     * \n 
+     * 
+    */
     qreal _truncate(qreal value, int numberOfDigits) const;
+
+    /**
+     * \fn _convertValueToNewScale
+     * \param oldValue The old value that will be converted.
+     * \param oldScaleBottom The old bottom value of the scale.
+     * \param oldScaleTop The old top value of the scale.
+     * \param newScaleBottom The new bottom value of the scale.
+     * \param newScaleTop The new top value of the scale.
+     * \brief Converts the value to the new scale.
+     * \details Creates a newValue variable as the old value minus the old scale bottom.
+     * \n Multiplies the new value by the new scale top minus the new scale bottom.
+     * \n Divides the new value by the old scale top minus the old scale bottom.
+     * \n Increments the new value by the new scale bottom.
+     * \n Returns the newValue.
+     * \return newValue (qreal)
+    */
     qreal _convertValueToNewScale(qreal oldValue, qreal oldScaleBottom, qreal oldScaleTop, qreal newScaleBottom, qreal newScaleTop);
+
+    /**
+     * \fn _deleteLists
+     * \brief Deletes all lists.
+     * \details Go through each list and deletes all elements of lists and calls the clear method of each list.
+     * \n Deletes the list of lines, dashed lines, vertical scale labels and horizontal scale labels.
+    */
     void _deleteLists();
 
 private slots:
+    /**
+     * \fn _onGridSizeChanged
+     * \brief Slot that is called when the grid size is changed.
+     * \details Sets the _redrawGrid to true.
+    */
     void _onGridSizeChanged();
 
 protected:
     // QQuickItem interface
+
+    /**
+     * \fn geometryChanged
+     * \param newGeometry The new geometry of the item.
+     * \param oldGeometry The old geometry of the item.
+     * \brief Slot that is called when the geometry is changed.
+     * \details Sets the _redrawGrid to true.
+     * \n If the _updateTimerId is equal to -1, then:
+     * \n -Sets the _updateTimerId as the startTimer of the _updateTime.
+    */
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
     // QObject interface
+
+    /**
+     * \fn timerEvent
+     * \param event The timer event.
+     * \brief Slot that is called when the timer event is called.
+     * \details If the event timer id is equal to the _updateTimerId, and the _isProcessingImage is false, then:
+     * \n Calls the update method from the QQuickItem.
+    */
     void timerEvent(QTimerEvent* event) override;
 
+    /**
+     * \fn updatePaintNode
+     * \param oldNode The old node.
+     * \param updatePaintNodeData The update paint node data.
+     * \brief Slot that is called when the paint node is updated.
+     * \details If there is no old node, then:
+     * \n -Creates a new node.
+     * \n -Sets the _backgroundLayer to the new node.
+     * \n -Sets the _gridLayer as to new node.
+     * \n -Sets the _peakLabelLayer as to new node.
+     * \n If the _redrawGrid is true, then:
+     * \n - Remove the child nodes of the old node.
+     * \n - Deletes the grid layer.
+     * \n - Creates a new grid layer.
+     * \n - Draws the grid.
+     * \n - Draws the lines 
+     * \n - Sets the _redrawGrid as false.
+     * \n - Sets the redraw Peak Labels as true.
+     * \n - Insert the grid layer as a child node of the old node, and also insert the background layer as a child node of the old node.
+     * \n Else:
+     * \n - Draws the lines with the grid layer.
+     * \n If the _redrawPeakLabels is true, then:
+     * \n - Removes the child nodes of the old node.
+     * \n - Deletes the peak label layer.
+     * \n - Creates a new peak label layer.
+     * \n - Draws the peak labels.
+     * \n - Sets the _redrawPeakLabels as false.
+     * \n - Inserts the peak label layer as a child node of the old node.
+     * \n Else:
+     * \n - Draws the peak labels with the peak label layer.
+     * \n Returns the old node.
+     * \return oldNode (QSGNode*)
+    */
     QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) override;
 
     // Nodes pointers
+
+    /**
+     * \fn _backgroundLayer
+     * \brief The background layer node.
+    */
     QSGNode* _backgroundLayer;
+
+    /**
+     * \fn _gridLayer
+     * \brief The grid layer node.
+    */
     QSGNode* _gridLayer;
+
+    /**
+     * \fn _peakLabelLayer
+     * \brief The peak label layer node.
+    */
     QSGNode* _peakLabelLayer;
 
 signals:
+
+    /**
+     * \fn hasScalesChanged
+     * \brief Signal that is emitted when the hasScales property is changed.
+    */
     void hasScalesChanged();
+
+    /**
+     * \fn removeGridHorizontalChanged
+     * \brief Signal that is emitted when the removeGridHorizontal property is changed.
+    */
     void removeGridHorizontalChanged();
 
+
+    /**
+     * \fn updateTimeChanged
+     * \brief Signal that is emitted when the updateTime property is changed.
+    */
     void updateTimeChanged();
 
+
+    /**
+     * \fn xScaleTopChanged
+     * \brief Signal that is emitted when the xScaleTop property is changed.
+    */
     void xScaleTopChanged();
+
+    /**
+     * \fn xScaleBottomChanged
+     * \brief Signal that is emitted when the xScaleBottom property is changed.
+    */
     void xScaleBottomChanged();
+
+    /**
+     * \fn xTickCountChanged
+     * \brief Signal that is emitted when the xTickCount property is changed.
+    */
     void xTickCountChanged();
+
+    /**
+     * \fn yTickCountChanged
+     * \brief Signal that is emitted when the yTickCount property is changed.
+    */
     void yTickCountChanged();
+
+    /**
+     * \fn verticalScaleHeigthChanged
+     * \brief Signal that is emitted when the verticalScaleHeigth property is changed.
+    */
     void verticalScaleHeigthChanged();
+
+    /**
+     * \fn horizontalScaleWidthChanged
+     * \brief Signal that is emitted when the horizontalScaleWidth property is changed.
+    */
     void horizontalScaleWidthChanged();
+
+    /**
+     * \fn plotAreaRigthPaddingChanged
+     * \brief Signal that is emitted when the plotAreaRigthPadding property is changed.
+    */
     void plotAreaRigthPaddingChanged();
 
+
+    /**
+     * \fn xTitleChanged
+     * \brief Signal that is emitted when the xTitle property is changed.
+    */
     void xTitleChanged();
+
+    /**
+     * \fn yTitleChanged
+     * \brief Signal that is emitted when the yTitle property is changed.
+    */
     void yTitleChanged();
 
+
+    /**
+     * \fn gridLineWidthChanged
+     * \brief Signal that is emitted when the gridLineWidth property is changed.
+    */
     void gridLineWidthChanged();
+
+    /**
+     * \fn gridColorChanged
+     * \brief Signal that is emitted when the gridColor property is changed.
+    */
     void gridColorChanged();
+
+    /**
+     * \fn gridSizeChanged
+     * \brief Signal that is emitted when the gridSize property is changed.
+    */
     void gridSizeChanged();
+
+    /**
+     * \fn gridOffsetChanged
+     * \brief Signal that is emitted when the gridOffset property is changed.
+    */
     void gridOffsetChanged();
 
+    /**
+     * \fn scaleColorChanged
+     * \brief Signal that is emitted when the scaleColor property is changed.
+    */
     void scaleColorChanged();
+
+    /**
+     * \fn backgroundColorChanged
+     * \brief Signal that is emitted when the backgroundColor property is changed.
+    */
     void backgroundColorChanged();
 
+
+    /**
+     * \fn linesChanged
+     * \brief Signal that is emitted when the lines property is changed.
+    */
     void linesChanged();
+
+    /**
+     * \fn dashedLinesChanged
+     * \brief Signal that is emitted when the dashedLines property is changed.
+    */
     void dashedLinesChanged();
+
+    /**
+     * \fn verticalScaleLabelsChanged
+     * \brief Signal that is emitted when the verticalScaleLabels property is changed.
+    */
     void verticalScaleLabelsChanged();
+
+    /**
+     * \fn horizontalScaleLabelsChanged
+     * \brief Signal that is emitted when the horizontalScaleLabels property is changed.
+    */
     void horizontalScaleLabelsChanged();
 };
 
