@@ -24,7 +24,7 @@ QLineF IracemaLineSeries::at(int index)
 
 QPointF IracemaLineSeries::pointAt(int index)
 {
-    return index < _data.length() ? _data.at(index).p2() : _dataBuffer.at(index - _data.length()).p2();
+    return (index < _data.length()) ? _data.at(index).p2() : _dataBuffer.at(index - _data.length()).p2();
 }
 
 int IracemaLineSeries::count()
@@ -34,24 +34,30 @@ int IracemaLineSeries::count()
 
 void IracemaLineSeries::applyDataBuffer()
 {
-    for(const auto& line : qAsConst(_dataBuffer))
+    for (const auto& line : qAsConst(_dataBuffer))
+    {
         _data.append(line);
+    }
 
     _dataBuffer.clear();
 }
 
 void IracemaLineSeries::applyPointLabelsBuffer()
 {
-    for(const auto& pointLabel : qAsConst(_graphPointLabelsBuffer))
+    for (const auto& pointLabel : qAsConst(_graphPointLabelsBuffer))
+    {
         _graphPointLabels.append(pointLabel);
+    }
 
     _graphPointLabelsBuffer.clear();
 }
 
 void IracemaLineSeries::addData(const QVector<QPointF>& data)
 {
-    for(const auto& point : data)
+    for (const auto& point : data)
+    {
         _addPointToBuffer(point);
+    }
 }
 
 void IracemaLineSeries::addPoint(const QPointF& point)
@@ -93,7 +99,8 @@ void IracemaLineSeries::_appendGraphPointLabels(QQmlListProperty<IracemaPointLab
 {
     auto line = qobject_cast<IracemaLineSeries*>(list->object);
 
-    if(line) {
+    if (line)
+    {
         label->setParentItem(line);
         line->_graphPointLabelsBuffer.append(label);
         emit line->graphPointLabelsChanged();
@@ -103,12 +110,19 @@ void IracemaLineSeries::_appendGraphPointLabels(QQmlListProperty<IracemaPointLab
 void IracemaLineSeries::_addPointToBuffer(const QPointF& point)
 {
     auto line = QLineF();
-    if(_dataBuffer.empty()) {
-        if(_data.empty())
+    if (_dataBuffer.empty())
+    {
+        if (_data.empty())
+        {
             line.setP1(point);
+        }
         else
+        {
             line.setP1(_data.last().p2());
-    } else {
+        }
+    }
+    else
+    {
         line.setP1(_dataBuffer.last().p2());
     }
 
@@ -116,12 +130,17 @@ void IracemaLineSeries::_addPointToBuffer(const QPointF& point)
     _dataBuffer.append(line);
 }
 
-void IracemaLineSeries::_deleteGraphPoint() {
-    for(auto &point : _graphPointLabels)
+void IracemaLineSeries::_deleteGraphPoint() noexcept
+{
+    for (auto &point : _graphPointLabels)
+    {
         delete point;
+    }
     _graphPointLabels.clear();
 
-    for(auto &pointBuffer : _graphPointLabelsBuffer)
+    for (auto &pointBuffer : _graphPointLabelsBuffer)
+    {
         delete pointBuffer;
+    }
     _graphPointLabelsBuffer.clear();
 }

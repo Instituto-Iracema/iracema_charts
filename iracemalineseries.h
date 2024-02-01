@@ -72,8 +72,8 @@ class IracemaLineSeries : public QQuickItem
 public:
     /**
      * \fn IracemaLineSeries
-     * \param parent Parent of the QML type.
      * \brief Constructor of the class.
+     * \param parent Parent of the QML type.
      * \details The default values of the properties are:
      * \n lineWidth = 1
      * \n yScaleTop = 1000
@@ -108,8 +108,11 @@ public:
      * \n If the new value is different from the old value, the function sets the new value and emits the lineWidthChanged() signal.
      */
     void setLineWidth(qreal newLineWidth) {
-        if(qFuzzyCompare(_lineWidth, newLineWidth))
+        if (qFuzzyCompare(_lineWidth, newLineWidth))
+        {
             return;
+        }
+
         _lineWidth = newLineWidth;
         emit lineWidthChanged();
     }
@@ -132,8 +135,11 @@ public:
      * \n If the new value is different from the old value, the function sets the new value and emits the yScaleTopChanged() signal.
      */
     void setYScaleTop(qreal newYScaleTop) {
-        if(qFuzzyCompare(_yScaleTop, newYScaleTop))
+        if (qFuzzyCompare(_yScaleTop, newYScaleTop))
+        {
             return;
+        }
+
         _yScaleTop = newYScaleTop;
         emit yScaleTopChanged();
     }
@@ -156,8 +162,11 @@ public:
      * \n If the new value is different from the old value, the function sets the new value and emits the yScaleBottomChanged() signal.
      */
     void setYScaleBottom(qreal newYScaleBottom) {
-        if(qFuzzyCompare(_yScaleBottom, newYScaleBottom))
+        if (qFuzzyCompare(_yScaleBottom, newYScaleBottom))
+        {
             return;
+        }
+
         _yScaleBottom = newYScaleBottom;
         emit yScaleBottomChanged();
     }
@@ -220,8 +229,11 @@ public:
      * \n If the new value is different from the old value, the function sets the new value and emits the lineColorChanged() signal.
      */
     void setLineColor(const QColor &newLineColor) {
-        if(_lineColor == newLineColor)
+        if (_lineColor == newLineColor)
+        {
             return;
+        }
+
         _lineColor = newLineColor;
         emit lineColorChanged();
     }
@@ -434,7 +446,7 @@ private:
      * \n   -Deletes the graph point label buffer.
      * \n Clears the graph point labels buffer.
      */
-    void _deleteGraphPoint();
+    void _deleteGraphPoint() noexcept;
 
 signals:
 

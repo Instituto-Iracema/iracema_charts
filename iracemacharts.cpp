@@ -1,7 +1,7 @@
 #include "iracemacharts.h"
 
-IracemaCharts::IracemaCharts(QQuickItem *parent)
-    : QQuickItem(parent)
+IracemaCharts::IracemaCharts(QQuickItem *parent) :
+QQuickItem(parent)
 {
     // By default, QQuickItem does not draw anything. If you subclass
     // QQuickItem to create a visual item, you will need to uncomment the

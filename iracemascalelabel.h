@@ -32,11 +32,12 @@ class IracemaScaleLabel : public QQuickItem
 public:
 
     /**
-     * \fn IracemaScaleLabel()
-     * \brief Default constructor.
+     * \fn IracemaScaleLabel
+     * \brief Constructor of the class.
+     * \param parent Parent of the QML type.
      * \details Constructs an IracemaScaleLabel with an empty scalePoint and scaleText.
      */
-    IracemaScaleLabel();
+    explicit IracemaScaleLabel(QQuickItem* parent = nullptr);
 
     /**
      * \fn scalePoint
@@ -56,8 +57,11 @@ public:
      * \n else the scalePoint is set to the new scalePoint and the scalePointChanged() signal is emitted.
      */
     void setScalePoint(int newScalePoint) {
-        if(_scalePoint == newScalePoint)
+        if (_scalePoint == newScalePoint)
+        {
             return;
+        }
+
         _scalePoint = newScalePoint;
         emit scalePointChanged();
     }
@@ -69,8 +73,10 @@ public:
      * \return The scaleText.
      */
     const QString& scaleText() {
-        if(_scaleText.isEmpty())
+        if (_scaleText.isEmpty())
+        {
             _scaleText = QString::number(_scalePoint);
+        }
 
         return _scaleText;
     }
@@ -83,8 +89,11 @@ public:
      * \n else the scaleText is set to the new scaleText and the scaleTextChanged() signal is emitted.
      */
     void setScaleText(const QString &newScaleText) {
-        if(_scaleText == newScaleText)
+        if (_scaleText == newScaleText)
+        {
             return;
+        }
+
         _scaleText = newScaleText;
         emit scaleTextChanged();
     }

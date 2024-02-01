@@ -1,6 +1,7 @@
 #include "iracemadashedline.h"
 
-IracemaDashedLine::IracemaDashedLine() :
+IracemaDashedLine::IracemaDashedLine(QQuickItem* parent) :
+QQuickItem(parent),
 _lineWidth(),
 _yScaleTop(100),
 _yScaleBottom(),

@@ -34,11 +34,12 @@ class IracemaPointLabel : public QQuickItem
 public:
 
     /**
-     * \fn IracemaPointLabel()
-     * \brief Default constructor.
+     * \fn IracemaPointLabel
+     * \brief Constructor of the class.
+     * \param parent Parent of the QML type.
      * \details Constructs an IracemaPointLabel with an empty graphPoint and text.
      */
-    IracemaPointLabel();
+    explicit IracemaPointLabel(QQuickItem* parent = nullptr);
 
     /**
      * \fn IracemaPointLabel
@@ -67,8 +68,11 @@ public:
      * \n Else it sets the graphPoint to the new graphPoint and emits the graphPointChanged() signal.
      */
     void setGraphPoint(QPointF newGraphPoint) {
-        if(_graphPoint == newGraphPoint)
+        if (_graphPoint == newGraphPoint)
+        {
             return;
+        }
+
         _graphPoint = newGraphPoint;
         emit graphPointChanged();
     }
@@ -91,8 +95,11 @@ public:
      * \n Else it sets the text to the new text and emits the textChanged() signal.
      */
     void setText(const QString &newText) {
-        if(_text == newText)
+        if (_text == newText)
+        {
             return;
+        }
+
         _text = newText;
         emit textChanged();
     }

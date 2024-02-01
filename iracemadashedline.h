@@ -60,10 +60,11 @@ public:
     /**
      * \fn IracemaDashedLine
      * \brief Constructor of the class.
+     * \param parent Parent of the QML type.
      * \details The constructor initializes the private attributes of the class.
      * \n The default values are empty except for the line color, which is black, and the yScaleTop, which is 100.
     */
-    IracemaDashedLine();
+    explicit IracemaDashedLine(QQuickItem* parent = nullptr);
 
     /**
      * \fn lineWidth
@@ -84,8 +85,10 @@ public:
      * \n If the new width is different from the current width, the function sets the new width and emits the signal lineWidthChanged().
     */
     void setLineWidth(qreal newLineWidth) {
-        if(qFuzzyCompare(_lineWidth, newLineWidth))
+        if (qFuzzyCompare(_lineWidth, newLineWidth))
+        {
             return;
+        }
 
         _lineWidth = newLineWidth;
         emit lineWidthChanged();
@@ -100,7 +103,7 @@ public:
     qreal yScaleTop() const {
         return _yScaleTop;
     }
-  
+
     /**
      * \fn setYScaleTop
      * \param newYScaleTop The new top of the yScale.
@@ -111,7 +114,9 @@ public:
     */
     void setYScaleTop(qreal newYScaleTop) {
         if (qFuzzyCompare(_yScaleTop, newYScaleTop))
+        {
             return;
+        }
 
         _yScaleTop = newYScaleTop;
         emit yScaleTopChanged();
@@ -126,7 +131,7 @@ public:
     qreal yScaleBottom() const {
         return _yScaleBottom;
     }
- 
+
     /**
      * \fn setYScaleBottom
      * \param newYScaleBottom The new bottom of the yScale.
@@ -137,7 +142,9 @@ public:
     */
     void setYScaleBottom(qreal newYScaleBottom) {
         if (qFuzzyCompare(_yScaleBottom, newYScaleBottom))
+        {
             return;
+        }
 
         _yScaleBottom = newYScaleBottom;
         emit yScaleBottomChanged();
@@ -152,7 +159,7 @@ public:
     QPointF initialPoint() const {
         return _initialPoint;
     }
- 
+
     /**
      * \fn setInitialPoint
      * \param newPoint The new initial point of the line.
@@ -162,8 +169,10 @@ public:
      * \n If the new initial point is different from the current initial point, the function sets the new initial point and emits the signal initialPointChanged().
     */
     void setInitialPoint(const QPointF& newPoint) {
-        if(_initialPoint == newPoint)
+        if (_initialPoint == newPoint)
+        {
             return;
+        }
 
         _initialPoint = newPoint;
         emit initialPointChanged();
@@ -178,7 +187,7 @@ public:
     QPointF finalPoint() const {
         return _finalPoint;
     }
- 
+
     /**
      * \fn setFinalPoint
      * \param newPoint The new final point of the line.
@@ -188,8 +197,10 @@ public:
      * \n If the new final point is different from the current final point, the function sets the new final point and emits the signal finalPointChanged().
     */
     void setFinalPoint(const QPointF& newPoint) {
-        if(_finalPoint == newPoint)
+        if (_finalPoint == newPoint)
+        {
             return;
+        }
 
         _finalPoint = newPoint;
         emit finalPointChanged();
@@ -215,7 +226,9 @@ public:
     */
     void setLineColor(const QColor &newLineColor) {
         if (_lineColor == newLineColor)
+        {
             return;
+        }
 
         _lineColor = newLineColor;
         emit lineColorChanged();

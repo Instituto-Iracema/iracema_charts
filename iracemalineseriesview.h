@@ -236,8 +236,11 @@ public:
      * \n If the new value is equal to the old value, the function returns.
     */
     void setHasScales(bool newHasScales) {
-        if(_hasScales == newHasScales)
+        if (_hasScales == newHasScales)
+        {
             return;
+        }
+
         _hasScales = newHasScales;
         emit hasScalesChanged();
     }
@@ -261,8 +264,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal removeGridHorizontalChanged.
     */
     void setRemoveGridHorizontal(bool newRemoveGridHorizontal) {
-        if(_removeGridHorizontal == newRemoveGridHorizontal)
+        if (_removeGridHorizontal == newRemoveGridHorizontal)
+        {
             return;
+        }
+
         _removeGridHorizontal = newRemoveGridHorizontal;
         emit removeGridHorizontalChanged();
     }
@@ -286,10 +292,13 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal updateTimeChanged.
     */
     void setUpdateTime(unsigned int newUpdateTime) {
-        if(_updateTime == newUpdateTime)
+        if (_updateTime == newUpdateTime)
+        {
             return;
+        }
+
         _updateTime = newUpdateTime;
-        emit updateTimeChanged();        
+        emit updateTimeChanged();
     }
 
     /**
@@ -312,8 +321,11 @@ public:
      * \n The function also calls the _setRedrawAll function.
     */
     void setXScaleTop(qreal newXScaleTop) {
-        if(qFuzzyCompare(_xScaleTop, newXScaleTop))
+        if (qFuzzyCompare(_xScaleTop, newXScaleTop))
+        {
             return;
+        }
+
         _xScaleTop = newXScaleTop;
         emit xScaleTopChanged();
         _setRedrawAll();
@@ -339,8 +351,11 @@ public:
      * \n The function also calls the _setRedrawAll function.
     */
     void setXScaleBottom(qreal newXScaleBottom) {
-        if(qFuzzyCompare(_xScaleBottom, newXScaleBottom))
+        if (qFuzzyCompare(_xScaleBottom, newXScaleBottom))
+        {
             return;
+        }
+
         _xScaleBottom = newXScaleBottom;
         emit xScaleBottomChanged();
         _setRedrawAll();
@@ -365,8 +380,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal xTickCountChanged.
     */
     void setXTickCount(qreal newXTickCount) {
-        if(qFuzzyCompare(_xTickCount, newXTickCount))
+        if (qFuzzyCompare(_xTickCount, newXTickCount))
+        {
             return;
+        }
+
         _xTickCount = newXTickCount;
         emit xTickCountChanged();
     }
@@ -390,8 +408,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal yTickCountChanged.
     */
     void setYTickCount(qreal newYTickCount) {
-        if(qFuzzyCompare(_yTickCount, newYTickCount))
+        if (qFuzzyCompare(_yTickCount, newYTickCount))
+        {
             return;
+        }
+
         _yTickCount = newYTickCount;
         emit yTickCountChanged();
     }
@@ -415,8 +436,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal verticalScaleHeigthChanged.
     */
     void setVerticalScaleHeigth(qreal newVerticalScaleHeigth) {
-        if(qFuzzyCompare(_verticalScaleHeigth, newVerticalScaleHeigth))
+        if (qFuzzyCompare(_verticalScaleHeigth, newVerticalScaleHeigth))
+        {
             return;
+        }
+
         _verticalScaleHeigth = newVerticalScaleHeigth;
         emit verticalScaleHeigthChanged();
     }
@@ -440,8 +464,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal horizontalScaleWidthChanged.
     */
     void setHorizontalScaleWidth(qreal newHorizontalScaleWidth) {
-        if(qFuzzyCompare(_horizontalScaleWidth, newHorizontalScaleWidth))
+        if (qFuzzyCompare(_horizontalScaleWidth, newHorizontalScaleWidth))
+        {
             return;
+        }
+
         _horizontalScaleWidth = newHorizontalScaleWidth;
         emit horizontalScaleWidthChanged();
     }
@@ -465,8 +492,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal plotAreaRigthPaddingChanged.
     */
     void setPlotAreaRigthPadding(qreal newPlotAreaRigthPadding) {
-        if(qFuzzyCompare(_plotAreaRigthPadding, newPlotAreaRigthPadding))
+        if (qFuzzyCompare(_plotAreaRigthPadding, newPlotAreaRigthPadding))
+        {
             return;
+        }
+
         _plotAreaRigthPadding = newPlotAreaRigthPadding;
         emit plotAreaRigthPaddingChanged();
     }
@@ -490,8 +520,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal xTitleChanged.
     */
     void setXTitle(QString newXTitle) {
-        if(_xTitle.compare(newXTitle) == 0)
+        if (_xTitle.compare(newXTitle) == 0)
+        {
             return;
+        }
+
         _xTitle = newXTitle;
         emit xTitleChanged();
     }
@@ -514,8 +547,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal yTitleChanged.
     */
     void setYTitle(QString newYTitle) {
-        if(_yTitle.compare(newYTitle) == 0)
+        if (_yTitle.compare(newYTitle) == 0)
+        {
             return;
+        }
+
         _yTitle = newYTitle;
         emit yTitleChanged();
     }
@@ -539,8 +575,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal gridLineWidthChanged.
     */
     void setGridLineWidth(qreal newGridLineWidth) {
-        if(qFuzzyCompare(_gridLineWidth, newGridLineWidth))
+        if (qFuzzyCompare(_gridLineWidth, newGridLineWidth))
+        {
             return;
+        }
+
         _gridLineWidth = newGridLineWidth;
         emit gridLineWidthChanged();
     }
@@ -564,8 +603,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal gridColorChanged.
     */
     void setGridColor(const QColor &newGridColor) {
-        if(_gridColor == newGridColor)
+        if (_gridColor == newGridColor)
+        {
             return;
+        }
+
         _gridColor = newGridColor;
         emit gridColorChanged();
     }
@@ -589,8 +631,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal gridSizeChanged.
      */
     void setGridSize(const QSizeF &newGridSize) {
-        if(_gridSize == newGridSize)
+        if (_gridSize == newGridSize)
+        {
             return;
+        }
+
         _gridSize = newGridSize;
         emit gridSizeChanged();
     }
@@ -614,8 +659,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the signal gridOffsetChanged.
     */
     void setGridOffset(const QSizeF &newGridOffset) {
-        if(_gridOffset == newGridOffset)
+        if (_gridOffset == newGridOffset)
+        {
             return;
+        }
+
         _gridOffset = newGridOffset;
         emit gridOffsetChanged();
     }
@@ -639,10 +687,13 @@ public:
      * \n Otherwise, the function sets the new value and emits the scaleColorChanged.
     */
     void setScaleColor(const QColor &newScaleColor) {
-        if(_scaleColor == newScaleColor)
+        if (_scaleColor == newScaleColor)
+        {
             return;
+        }
+
         _scaleColor = newScaleColor;
-        emit scaleColorChanged();   
+        emit scaleColorChanged();
     }
 
     /**
@@ -664,8 +715,11 @@ public:
      * \n Otherwise, the function sets the new value and emits the backgroundColorChanged.
     */
     void setBackgroundColor(const QColor &newBackgroundColor) {
-        if(_backgroundColor == newBackgroundColor)
+        if (_backgroundColor == newBackgroundColor)
+        {
             return;
+        }
+
         _backgroundColor = newBackgroundColor;
         emit backgroundColorChanged();
     }
@@ -763,109 +817,109 @@ private:
      * \fn _hasScales
      * \brief The hasScales property, used to define if the chart has scales.
     */
-    bool _hasScales = false;
+    bool _hasScales;
 
     /**
      * \fn _removeGridHorizontal
      * \brief The removeGridHorizontal property, used to define if the horizontal grid will be removed.
     */
-    bool _removeGridHorizontal = false;
+    bool _removeGridHorizontal;
 
     /**
      * \fn _updateTime
      * \brief The updateTime property, used to define the time between updates.
     */
-    unsigned int _updateTime = 50;
+    unsigned int _updateTime;
 
     /**
      * \fn _xScaleTop
      * \brief The xScaleTop property, used to define the top value of the x scale.
     */
-    qreal _xScaleTop = 10000;
+    qreal _xScaleTop;
 
     /**
      * \fn _xScaleBottom
      * \brief The xScaleBottom property, used to define the bottom value of the x scale.
     */
-    qreal _xScaleBottom = 0;
+    qreal _xScaleBottom;
 
     /**
      * \fn _xTickCount
      * \brief The xTickCount property, used to define the number of ticks in the x scale.
     */
-    qreal _xTickCount = 0;
+    qreal _xTickCount;
 
     /**
      * \fn _yTickCount
      * \brief The yTickCount property, used to define the number of ticks in the y scale.
     */
-    qreal _yTickCount = 0;
+    qreal _yTickCount;
 
     /**
      * \fn _verticalScaleHeigth
      * \brief The verticalScaleHeigth property, used to define the height of the vertical scale.
     */
-    qreal _verticalScaleHeigth = 50;
+    qreal _verticalScaleHeigth;
 
     /**
      * \fn _horizontalScaleWidth
      * \brief The horizontalScaleWidth property, used to define the width of the horizontal scale.
     */
-    qreal _horizontalScaleWidth = 50;
+    qreal _horizontalScaleWidth;
 
     /**
      * \fn _plotAreaRigthPadding
      * \brief The plotAreaRigthPadding property, used to define the padding of the plot area.
     */
-    qreal _plotAreaRigthPadding = _horizontalScaleWidth * 0.3;
+    qreal _plotAreaRigthPadding;
 
     /**
      * \fn _xTitle
      * \brief The xTitle property, used to define the title of the x scale.
     */
-    QString _xTitle = "";
+    QString _xTitle;
 
     /**
      * \fn _yTitle
      * \brief The yTitle property, used to define the title of the y scale.
     */
-    QString _yTitle = "";
+    QString _yTitle;
 
     /**
      * \fn _gridLineWidth
      * \brief The gridLineWidth property, used to define the width of the grid lines.
     */
-    qreal _gridLineWidth = 1;
+    qreal _gridLineWidth;
 
     /**
      * \fn _gridColor
      * \brief The gridColor property, used to define the color of the grid lines.
     */
-    QColor _gridColor = Qt::gray;
+    QColor _gridColor;
 
     /**
      * \fn _gridSize
      * \brief The gridSize property, used to define the size of the grid.
     */
-    QSizeF _gridSize = QSizeF(1, 1);
+    QSizeF _gridSize;
 
     /**
      * \fn _gridOffset
      * \brief The gridOffset property, used to define the offset of the grid.
     */
-    QSizeF _gridOffset = QSizeF(0, 0);
+    QSizeF _gridOffset;
 
     /**
      * \fn _scaleColor
      * \brief The scaleColor property, used to define the color of the scales.
     */
-    QColor _scaleColor = Qt::white;
+    QColor _scaleColor;
 
     /**
      * \fn _backgroundColor
      * \brief The backgroundColor property, used to define the color of the background.
     */
-    QColor _backgroundColor = Qt::white;
+    QColor _backgroundColor;
 
 
     // Lists
@@ -900,32 +954,32 @@ private:
      * \fn _isProcessingImage
      * \brief The isProcessingImage property, used to define if the image is being processed.
     */
-    bool _isProcessingImage = false;
+    bool _isProcessingImage;
     
 
     /**
      * \fn _redrawGrid
      * \brief The redrawGrid property, used to define if the grid will be redrawn.
     */
-    bool _redrawGrid = true;
+    bool _redrawGrid;
 
     /**
      * \fn _redrawLines
      * \brief The redrawLines property, used to define if the lines will be redrawn.
     */
-    bool _redrawLines = true;
+    bool _redrawLines;
 
     /**
      * \fn _redrawPeakLabels
      * \brief The redrawPeakLabels property, used to define if the peak labels will be redrawn.
     */
-    bool _redrawPeakLabels = true;
+    bool _redrawPeakLabels;
 
     /**
      * \fn _updateTimerId
      * \brief The updateTimerId property, used to define the id of the update timer.
     */
-    int _updateTimerId = -1;
+    int _updateTimerId;
 
 
     // Functions
@@ -972,7 +1026,7 @@ private:
     static void _appendHorizontalScaleLabel(QQmlListProperty<IracemaScaleLabel>* list, IracemaScaleLabel* label);
 
 
-     /**
+    /**
      * \fn _appendVerticalScaleLabel
      * \param list The list of vertical scale labels.
      * \param label The vertical scale label that will be added to the list.
@@ -1316,7 +1370,7 @@ private:
      * \details Go through each list and deletes all elements of lists and calls the clear method of each list.
      * \n Deletes the list of lines, dashed lines, vertical scale labels and horizontal scale labels.
     */
-    void _deleteLists();
+    void _deleteLists() noexcept;
 
 private slots:
     /**

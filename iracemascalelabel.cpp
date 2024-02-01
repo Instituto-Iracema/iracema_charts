@@ -1,6 +1,7 @@
 #include "iracemascalelabel.h"
 
-IracemaScaleLabel::IracemaScaleLabel() :
-_scalePoint{0},
-_scaleText{}
+IracemaScaleLabel::IracemaScaleLabel(QQuickItem* parent) :
+QQuickItem(parent),
+_scalePoint(),
+_scaleText()
 {}
