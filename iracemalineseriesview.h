@@ -1212,7 +1212,7 @@ private:
      * \n  --Sets the flag of the label according if it is owned by a parent or it has its own geometry.
      * \n  --Creates newX and newY variables.
      * \n  --Draws the scale label.
-     * \n  -- Append the child node of the peak label layer, as the label.
+     * \n  --Append the child node of the peak label layer, as the label.
     */
     void _drawPeaksLabels(bool redrawAll = false);
 

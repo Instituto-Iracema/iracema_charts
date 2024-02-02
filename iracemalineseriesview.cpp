@@ -508,6 +508,7 @@ void IracemaLineSeriesView::_drawPeaksLabels(bool redrawAll)
             auto newX = _convertValueToNewScale(pointLabel->graphPoint().x(), _xScaleBottom, _xScaleTop, rectangle.x(), rectangle.right());
             auto newY = _convertValueToNewScale(pointLabel->graphPoint().y(), yScaleBottom, yScaleTop, rectangle.bottom(), rectangle.top());
             _drawScaleLabel(label, newX - 25, newY - 10, pointLabel->text(), QTextOption(Qt::AlignHCenter));
+            _drawScaleLabel(label, newX - 25, newY - 30, pointLabel->upperText(), QTextOption(Qt::AlignHCenter));
             _peakLabelLayer->appendChildNode(label);
         }
     }

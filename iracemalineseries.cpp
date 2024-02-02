@@ -70,16 +70,16 @@ void IracemaLineSeries::addPoint(float x, float y)
     _addPointToBuffer(QPointF(x, y));
 }
 
-void IracemaLineSeries::appendGraphPointLabels(const QPointF& position, const QString& text)
+void IracemaLineSeries::appendGraphPointLabels(const QPointF& position, const QString& text, const QString& upperText)
 {
-    auto label = new IracemaPointLabel(position, text);
+    auto label = new IracemaPointLabel(position, text, upperText);
     _graphPointLabelsBuffer.append(label);
     emit graphPointLabelsChanged();
 }
 
-void IracemaLineSeries::appendGraphPointLabels(qreal x, qreal y, const QString& text)
+void IracemaLineSeries::appendGraphPointLabels(qreal x, qreal y, const QString& text, const QString& upperText)
 {
-    appendGraphPointLabels(QPointF(x, y), text);
+    appendGraphPointLabels(QPointF(x, y), text, upperText);
 }
 
 void IracemaLineSeries::clearData()

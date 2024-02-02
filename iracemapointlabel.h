@@ -29,6 +29,7 @@ class IracemaPointLabel : public QQuickItem
     Q_OBJECT
     Q_PROPERTY(QPointF graphPoint READ graphPoint WRITE setGraphPoint NOTIFY graphPointChanged)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
+    Q_PROPERTY(QString upperText READ upperText WRITE setUpperText NOTIFY upperTextChanged)
     QML_NAMED_ELEMENT(IracemaPointLabel)
 
 public:
@@ -37,7 +38,7 @@ public:
      * \fn IracemaPointLabel
      * \brief Constructor of the class.
      * \param parent Parent of the QML type.
-     * \details Constructs an IracemaPointLabel with an empty graphPoint and text.
+     * \details Constructs an IracemaPointLabel with an empty graphPoint, text and upperText.
      */
     explicit IracemaPointLabel(QQuickItem* parent = nullptr);
 
@@ -45,10 +46,11 @@ public:
      * \fn IracemaPointLabel
      * \param graphPoint The point in the graph.
      * \param text The text to display.
+     * \param upperText The upperText to display.
      * \brief Constructor.
-     * \details Constructs an IracemaPointLabel with the given graphPoint and text.
+     * \details Constructs an IracemaPointLabel with the given graphPoint, text and upperText.
      */
-    IracemaPointLabel(QPointF graphPoint, QString text);
+    IracemaPointLabel(QPointF graphPoint, QString text, QString upperText);
 
     /**
      * \fn graphPoint
@@ -104,6 +106,33 @@ public:
         emit textChanged();
     }
 
+    /**
+     * \fn upperText
+     * \brief Returns the upperText.
+     * \details Returns the upperText.
+     * \return The upperText.
+     */
+    const QString &upperText() const {
+        return _upperText;
+    }
+
+    /**
+     * \fn setUpperText
+     * \param newUpperText The new upperText.
+     * \brief Sets the upperText.
+     * \details If the upperText is the same as the current upperText, this function does nothing.
+     * \n Else it sets the upperText to the new upperText and emits the upperTextChanged() signal.
+     */
+    void setUpperText(const QString &newUpperText) {
+        if (_upperText == newUpperText)
+        {
+            return;
+        }
+
+        _upperText = newUpperText;
+        emit upperTextChanged();
+    }
+
 private:
 
     /**
@@ -117,6 +146,12 @@ private:
      * \brief The text to display.
     */
     QString _text;
+
+    /**
+     * \fn _upperText
+     * \brief The upper text to display.
+    */
+    QString _upperText;
 
 signals:
 
@@ -133,6 +168,13 @@ signals:
      * \details Emitted when the text changes.
      */
     void textChanged();
+
+    /**
+     * \fn upperTextChanged
+     * \brief Emitted when the upperText changes.
+     * \details Emitted when the upperText changes.
+     */
+    void upperTextChanged();
 };
 
 #endif // IRACEMAPOINTLABEL_H

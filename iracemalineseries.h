@@ -319,6 +319,7 @@ public:
      * \fn appendGraphPointLabels
      * \param position The position of the graph point label.
      * \param text The text of the graph point label.
+     * \param upperText The upperText of the graph point label.
      * \brief Appends the graph point label to the graph point labels buffer.
      * \details The function appends the graph point label to the graph point labels buffer.
      * \n Creates a new graph point label with the given position and text.
@@ -326,19 +327,20 @@ public:
      * \n Emits the graphPointLabelsChanged() signal.
      * \n This function is used in the QML type to append the graph point label to the graph point labels buffer.
      */
-    Q_INVOKABLE void appendGraphPointLabels(const QPointF& position, const QString& text);
+    Q_INVOKABLE void appendGraphPointLabels(const QPointF& position, const QString& text, const QString& upperText);
 
     /**
      * \fn appendGraphPointLabels
      * \param x The x coordinate of the graph point label.
      * \param y The y coordinate of the graph point label.
      * \param text The text of the graph point label.
+     * \param upperText The upperText of the graph point label.
      * \brief Appends the graph point label to the graph point labels.
      * \details The function appends the graph point label to the graph point labels, with x and y coordinates and the given text.
      * \n Appends the graph point label to the graph point labels.
      * \n This function is used in the QML type to append the graph point label to the graph point labels buffer.
      */
-    Q_INVOKABLE void appendGraphPointLabels(qreal x, qreal y, const QString& text);
+    Q_INVOKABLE void appendGraphPointLabels(qreal x, qreal y, const QString& text, const QString& upperText);
 
     /**
      * \fn clearData
