@@ -700,7 +700,7 @@ QRectF IracemaLineSeriesView::_calculatePlotArea()
     qreal y = 0;
     qreal width = 0;
     qreal height = 0;
-    return _calculatePlotArea(x, y, width, heigth);
+    return _calculatePlotArea(x, y, width, height);
 }
 
 QRectF IracemaLineSeriesView::_calculatePlotArea(qreal &x, qreal &y, qreal &width, qreal &heigth)
