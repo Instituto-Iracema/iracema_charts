@@ -213,7 +213,7 @@ public:
      * \details Destroys the IracemaLineSeriesView object.
      * \n Calls the _deleteLists function.
     */
-    ~IracemaLineSeriesView();
+    virtual ~IracemaLineSeriesView();
 
     // Properties Getters and Setters
 
@@ -1159,14 +1159,14 @@ private:
 
     /**
      * \fn _drawLines
-     * \param lineSeriesNode The main node of the lines.
+     * \param mainNode The main node of the lines.
      * \param redrawAllData The boolean that defines if all data will be redrawn.
      * \brief Draws the lines.
      * \details For each lineSeries in lines:
      * \n - Creates a line series node, sets it flags if it it owned by a parent or it has its own geometry.
-     * \n - Also Draws the çline Series and append the lineSeriesNode as a child node of the main node.
+     * \n - Also Draws the çline Series and append the mainNode as a child node of the main node.
     */
-    void _drawLines(QSGNode* lineSeriesNode, bool redrawAllData = false);
+    void _drawLines(QSGNode* mainNode, bool redrawAllData = false);
 
     /**
      * \fn _drawLineSeries
@@ -1193,7 +1193,7 @@ private:
      * \n - Creates a new material and sets it color as the line color.
      * \n - Draws the line.
      **/ 
-    void _drawLineSeries(QSGNode* mainNode, IracemaLineSeries* line, bool invertY = true, bool redrawAllData = false);
+    void _drawLineSeries(QSGNode* mainNode, IracemaLineSeries* lineSeries, bool invertY = true, bool redrawAllData = false);
     
     /**
      * \fn _drawPeaksLabels
@@ -1403,7 +1403,7 @@ protected:
      * \details If the event timer id is equal to the _updateTimerId, and the _isProcessingImage is false, then:
      * \n Calls the update method from the QQuickItem.
     */
-    void timerEvent(QTimerEvent* event) override;
+    virtual void timerEvent(QTimerEvent* event) override;
 
     /**
      * \fn updatePaintNode
@@ -1438,7 +1438,7 @@ protected:
      * \n Returns the old node.
      * \return oldNode (QSGNode*)
     */
-    QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) override;
+    virtual QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) override;
 
     // Nodes pointers
 

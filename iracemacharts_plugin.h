@@ -29,7 +29,7 @@ public:
      * \details This function is called by the QML engine when the plugin is loaded.
      * \n Calls qmlRegisterType
     */
-    void registerTypes(const char *uri) override;
+    virtual void registerTypes(const char *uri) override;
 };
 
 #endif // IRACEMACHARTS_PLUGIN_H

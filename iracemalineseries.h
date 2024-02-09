@@ -88,7 +88,7 @@ public:
      * \brief Destructor of the class.
      * \details The destructor deletes the graph point labels by calling the _deleteGraphPoint() function.
      */
-    ~IracemaLineSeries();
+    virtual ~IracemaLineSeries();
 
     /**
      * \fn lineWidth

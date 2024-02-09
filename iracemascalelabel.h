@@ -72,7 +72,7 @@ public:
      * \details If the scaleText is empty, it is set to the scalePoint.
      * \return The scaleText.
      */
-    const QString& scaleText() {
+    const QString scaleText() {
         if (_scaleText.isEmpty())
         {
             _scaleText = QString::number(_scalePoint);

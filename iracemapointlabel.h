@@ -85,7 +85,7 @@ public:
      * \details Returns the text.
      * \return The text.
      */
-    const QString &text() const {
+    const QString text() const {
         return _text;
     }
 

@@ -73,6 +73,11 @@ void IracemaLineSeries::addPoint(float x, float y)
 void IracemaLineSeries::appendGraphPointLabels(const QPointF& position, const QString& text, const QString& upperText)
 {
     auto label = new IracemaPointLabel(position, text, upperText);
+    if (label == nullptr)
+    {
+        return;
+    }
+
     _graphPointLabelsBuffer.append(label);
     emit graphPointLabelsChanged();
 }

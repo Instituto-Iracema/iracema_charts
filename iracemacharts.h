@@ -37,7 +37,7 @@ public:
      * \brief Destructor.
      * \details Does nothing.
     */
-    ~IracemaCharts() override;
+    virtual ~IracemaCharts() override;
 };
 
 #endif // IRACEMACHARTS_H
