@@ -41,20 +41,6 @@ _peakLabelLayer(nullptr)
 IracemaLineSeriesView::~IracemaLineSeriesView()
 {
     _deleteLists();
-    if (_backgroundLayer != nullptr)
-    {
-        delete _backgroundLayer;
-    }
-
-    if (_gridLayer != nullptr)
-    {
-        delete _gridLayer;
-    }
-
-    if (_peakLabelLayer != nullptr)
-    {
-        delete _peakLabelLayer;
-    }
 }
 
 void IracemaLineSeriesView::addPoint(quint32 lineIndex, const QPointF& point)

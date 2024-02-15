@@ -11,5 +11,4 @@ QQuickItem(parent)
 }
 
 IracemaCharts::~IracemaCharts()
-{
-}
+{}
