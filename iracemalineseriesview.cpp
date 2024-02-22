@@ -442,6 +442,10 @@ void IracemaLineSeriesView::_drawTitles(QSGNode* mainNode)
     auto textureY = window()->createTextureFromImage(pixmapY.toImage());
 
     auto childNodeX = new QSGSimpleTextureNode;
+    if (childNodeX == nullptr)
+    {
+        return;
+    }
     childNodeX->setOwnsTexture(true);
     childNodeX->setRect(QRectF(xMidPoint, rect.y() + rect.height() + 25, width, height));
     childNodeX->markDirty(QSGNode::DirtyForceUpdate);
@@ -450,6 +454,10 @@ void IracemaLineSeriesView::_drawTitles(QSGNode* mainNode)
     mainNode->appendChildNode(childNodeX);
 
     auto childNodeY = new QSGSimpleTextureNode;
+    if (childNodeY == nullptr)
+    {
+        return;
+    }
     childNodeY->setOwnsTexture(true);
     childNodeY->setRect(QRectF(0, yMidPoint, height, width));
     childNodeY->markDirty(QSGNode::DirtyForceUpdate);

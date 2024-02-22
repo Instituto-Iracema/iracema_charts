@@ -112,7 +112,7 @@ public:
      * \details Returns the upperText.
      * \return The upperText.
      */
-    const QString &upperText() const {
+    const QString upperText() const {
         return _upperText;
     }
 
