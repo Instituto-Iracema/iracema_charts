@@ -17,10 +17,14 @@
  *      + setGraphPoint()
  *      + text()
  *      + setText()
+ *      + upperText()
+ *      + setUpperText()
  *      + {signal}graphPointChanged()
  *      + {signal}textChanged()
+ *      + {signal}upperTextChanged()
  *      - _graphPoint
  *      - _text
+ *      - _upperText
  * }
  * \enduml
 */
