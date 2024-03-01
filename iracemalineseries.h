@@ -6,7 +6,8 @@
 #include <QQuickItem>
 #include <QSGFlatColorMaterial>
 #include <QVector>
-#include <iracemapointlabel.h>
+
+#include "iracemapointlabel.h"
 
 /**
  * \class IracemaLineSeries
